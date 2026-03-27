@@ -5,7 +5,7 @@ import AdminRoute from "./components/AdminRoute";
 import UserLayout from "./components/UserLayout";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard";
+import Dashboard from "./pages/Dashboard.tsx";
 import Groups from "./pages/Groups";
 import GroupDetails from "./pages/GroupDetails";
 import Activity from "./pages/Activity";
