@@ -48,6 +48,10 @@ public class User implements UserDetails {
     @Builder.Default
     private Role role = Role.ROLE_USER;
 
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    @Builder.Default
+    private boolean enabled = true;
+
     @Column(nullable = false, updatable = false)
     @Builder.Default
     private Instant createdAt = Instant.now();
@@ -71,5 +75,5 @@ public class User implements UserDetails {
     @Override
     public boolean isCredentialsNonExpired() { return true; }
     @Override
-    public boolean isEnabled()            { return true; }
+    public boolean isEnabled()            { return enabled; }
 }

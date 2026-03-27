@@ -35,3 +35,23 @@ export interface ApiResponse<T> {
   error: ApiError | null;
   timestamp: string;
 }
+
+export interface AdminUserDto {
+  id: number;
+  email: string;
+  firstname: string;
+  lastname: string;
+  role: string;
+  enabled: boolean;
+  createdAt: string;
+}
+
+export interface AdminAuditLogDto {
+  id: number;
+  action: string;
+  actorEmail: string;
+  targetUserId: number | null;
+  targetUserEmail: string | null;
+  details: string | null;
+  createdAt: string;
+}

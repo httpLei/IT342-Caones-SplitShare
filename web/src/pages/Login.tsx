@@ -10,7 +10,10 @@ export default function Login() {
 
   // Already logged in → skip login page entirely
   useEffect(() => {
-    if (isAuthenticated) navigate("/dashboard", { replace: true });
+    if (isAuthenticated) {
+      // Import user from context would require refactoring, so defer check to after login
+      navigate("/dashboard", { replace: true });
+    }
   }, [isAuthenticated, navigate]);
 
   const [email,    setEmail]    = useState("");
@@ -29,8 +32,8 @@ export default function Login() {
       const body = res.data;
       if (body.success && body.data) {
         login(body.data.user, body.data.accessToken, body.data.refreshToken);
-        setSuccess("Successfully logged in! Redirecting...");
-        setTimeout(() => navigate("/dashboard", { replace: true }), 1500);
+        const redirectPath = body.data.user.role === "ROLE_ADMIN" ? "/admin" : "/dashboard";
+        navigate(redirectPath, { replace: true });
       } else {
         setError(body.error?.message ?? "Login failed.");
       }

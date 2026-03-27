@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useAuth } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 
@@ -64,6 +64,13 @@ export default function Dashboard() {
   const navigate = useNavigate();
   const [active, setActive] = useState("dashboard");
   const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  // Redirect admins to admin console
+  useEffect(() => {
+    if (user?.role === "ROLE_ADMIN") {
+      navigate("/admin", { replace: true });
+    }
+  }, [user, navigate]);
 
   const confirmLogout = () => { logout(); navigate("/login", { replace: true }); };
 
@@ -183,14 +190,27 @@ export default function Dashboard() {
               </h1>
               <p className="text-sm text-gray-400 mt-1">Here's your expense summary</p>
             </div>
-            <button
-              className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white rounded-xl transition cursor-pointer"
-              style={{ background: "#662498" }}
-              onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#4a1870")}
-              onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#662498")}
-            >
-              + Add Expense
-            </button>
+            <div className="flex items-center gap-3">
+              {user?.role === "ROLE_ADMIN" && (
+                <button
+                  onClick={() => navigate("/admin")}
+                  className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold rounded-xl transition cursor-pointer"
+                  style={{ background: "#e9ddff", color: "#4a1870" }}
+                  onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#dccbff")}
+                  onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#e9ddff")}
+                >
+                  Admin Console
+                </button>
+              )}
+              <button
+                className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white rounded-xl transition cursor-pointer"
+                style={{ background: "#662498" }}
+                onMouseEnter={e => ((e.currentTarget as HTMLElement).style.background = "#4a1870")}
+                onMouseLeave={e => ((e.currentTarget as HTMLElement).style.background = "#662498")}
+              >
+                + Add Expense
+              </button>
+            </div>
           </div>
 
           {/* Stat cards */}

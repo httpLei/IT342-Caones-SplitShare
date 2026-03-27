@@ -6,12 +6,14 @@ import edu.cit.caones.splitshare.dto.response.AuthData;
 import edu.cit.caones.splitshare.dto.response.UserDto;
 import edu.cit.caones.splitshare.entity.Role;
 import edu.cit.caones.splitshare.entity.User;
+import edu.cit.caones.splitshare.exception.AccountDisabledException;
 import edu.cit.caones.splitshare.exception.DuplicateEmailException;
 import edu.cit.caones.splitshare.exception.InvalidCredentialsException;
 import edu.cit.caones.splitshare.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -55,6 +57,8 @@ public class AuthService {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
             );
+        } catch (DisabledException ex) {
+            throw new AccountDisabledException("Your account is suspended. Please contact an administrator.");
         } catch (BadCredentialsException ex) {
             throw new InvalidCredentialsException("Email or password is incorrect");
         }

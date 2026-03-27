@@ -1,5 +1,12 @@
 import axios from 'axios';
-import type { ApiResponse, AuthData, LoginRequest, RegisterRequest } from '../types/auth';
+import type {
+  AdminAuditLogDto,
+  AdminUserDto,
+  ApiResponse,
+  AuthData,
+  LoginRequest,
+  RegisterRequest,
+} from '../types/auth';
 
 const api = axios.create({
   baseURL: '/api/v1',
@@ -19,6 +26,17 @@ export const authApi = {
 
   login: (data: LoginRequest) =>
     api.post<ApiResponse<AuthData>>('/auth/login', data),
+};
+
+export const adminApi = {
+  getUsers: () =>
+    api.get<ApiResponse<AdminUserDto[]>>('/admin/users'),
+
+  updateUserStatus: (id: number, enabled: boolean) =>
+    api.put<ApiResponse<AdminUserDto>>(`/admin/users/${id}/status`, { enabled }),
+
+  getAuditLogs: (limit = 50) =>
+    api.get<ApiResponse<AdminAuditLogDto[]>>('/admin/audit-logs', { params: { limit } }),
 };
 
 export default api;
