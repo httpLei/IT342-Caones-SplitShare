@@ -9,6 +9,7 @@ import edu.cit.caones.splitshare.entity.User;
 import edu.cit.caones.splitshare.exception.AccountDisabledException;
 import edu.cit.caones.splitshare.exception.DuplicateEmailException;
 import edu.cit.caones.splitshare.exception.InvalidCredentialsException;
+import edu.cit.caones.splitshare.factory.UserFactory;
 import edu.cit.caones.splitshare.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,19 +27,15 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final UserFactory userFactory;
 
     public AuthData register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new DuplicateEmailException("Email is already in use");
         }
 
-        User user = User.builder()
-                .firstname(request.getFirstname())
-                .lastname(request.getLastname())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.ROLE_USER)
-                .build();
+        // Use Factory pattern to create User with consistent defaults
+        User user = userFactory.createFromRegisterRequest(request, passwordEncoder.encode(request.getPassword()));
 
         userRepository.save(user);
 
