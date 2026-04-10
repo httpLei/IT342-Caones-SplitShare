@@ -1,9 +1,42 @@
+import { useEffect, useMemo, useState } from "react";
 import { Link, Navigate, useParams } from "react-router-dom";
-import { ACTIVITY } from "../data/mockData";
+import { userApi } from "../services/userService";
+import type { UserActivityDto } from "../types/social";
+import { formatPeso, signedPeso } from "../utils/format";
 
 export default function ActivityDetails() {
   const { activityId } = useParams();
-  const activity = ACTIVITY.find((item) => item.id === activityId);
+  const id = Number(activityId);
+  const [rows, setRows] = useState<UserActivityDto[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (!Number.isFinite(id)) return;
+    setLoading(true);
+    setError("");
+    userApi.getMyHistory()
+      .then((response) => setRows(response.data.data ?? []))
+      .catch((err: unknown) => {
+        const message = (err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message;
+        setError(message ?? "Unable to load activity details.");
+      })
+      .finally(() => setLoading(false));
+  }, [id]);
+
+  const activity = useMemo(() => rows.find((item) => item.id === id), [rows, id]);
+
+  if (!Number.isFinite(id)) {
+    return <Navigate to="/activity" replace />;
+  }
+
+  if (loading) {
+    return <div className="rounded-2xl border border-gray-100 bg-white p-6 text-sm text-gray-500">Loading activity details...</div>;
+  }
+
+  if (error) {
+    return <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">{error}</div>;
+  }
 
   if (!activity) {
     return <Navigate to="/activity" replace />;
@@ -39,12 +72,12 @@ export default function ActivityDetails() {
           </div>
           <div>
             <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Total Amount</p>
-            <p className="text-sm font-medium text-gray-800 mt-1">P{activity.amount}</p>
+            <p className="text-sm font-medium text-gray-800 mt-1">{formatPeso(activity.amount)}</p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Your Share</p>
             <p className="text-sm font-bold mt-1" style={{ color: isCredit ? "#16a34a" : "#dc2626" }}>
-              {activity.share.startsWith("-") ? `-P${activity.share.replace("-", "")}` : `+P${activity.share.replace("+", "")}`}
+              {signedPeso(activity.share)}
             </p>
           </div>
           <div>
