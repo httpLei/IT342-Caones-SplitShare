@@ -1,8 +1,12 @@
 package edu.cit.caones.splitshare.service;
 
+import edu.cit.caones.splitshare.dto.request.UpdateProfileRequest;
 import edu.cit.caones.splitshare.dto.response.UserConnectionDto;
+import edu.cit.caones.splitshare.dto.response.UserProfileStatsDto;
+import edu.cit.caones.splitshare.dto.response.UserDto;
 import edu.cit.caones.splitshare.entity.User;
 import edu.cit.caones.splitshare.entity.UserFollow;
+import edu.cit.caones.splitshare.repository.GroupRepository;
 import edu.cit.caones.splitshare.repository.UserFollowRepository;
 import edu.cit.caones.splitshare.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +25,7 @@ public class UserSocialService {
 
     private final UserRepository userRepository;
     private final UserFollowRepository userFollowRepository;
+    private final GroupRepository groupRepository;
 
     @Transactional(readOnly = true)
     public List<UserConnectionDto> searchUsers(String query, String currentUserEmail) {
@@ -103,6 +108,37 @@ public class UserSocialService {
 
         return userFollowRepository.existsByFollower_IdAndFollowing_Id(a.getId(), b.getId())
                 && userFollowRepository.existsByFollower_IdAndFollowing_Id(b.getId(), a.getId());
+    }
+
+    @Transactional(readOnly = true)
+    public UserProfileStatsDto getProfileStats(String currentUserEmail) {
+        int groupsCount = groupRepository.findAllVisibleToUser(currentUserEmail).size();
+        long followersCount = userFollowRepository.countFollowers(currentUserEmail);
+        long followingCount = userFollowRepository.countFollowing(currentUserEmail);
+        
+        return new UserProfileStatsDto(
+            groupsCount, 
+            (int) followersCount, 
+            (int) followingCount
+        );
+    }
+
+    @Transactional
+    public UserDto updateProfile(UpdateProfileRequest request, String currentUserEmail) {
+        User user = getCurrentUser(currentUserEmail);
+        if (request.getFirstname() != null && !request.getFirstname().isBlank()) {
+            user.setFirstname(request.getFirstname().trim());
+        }
+        if (request.getLastname() != null && !request.getLastname().isBlank()) {
+            user.setLastname(request.getLastname().trim());
+        }
+        userRepository.save(user);
+        return UserDto.builder()
+                .email(user.getEmail())
+                .firstname(user.getFirstname())
+                .lastname(user.getLastname())
+                .role(user.getRole().name())
+                .build();
     }
 
     private User getCurrentUser(String currentUserEmail) {

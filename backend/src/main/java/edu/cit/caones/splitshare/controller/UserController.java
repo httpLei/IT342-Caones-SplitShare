@@ -1,8 +1,11 @@
 package edu.cit.caones.splitshare.controller;
 
+import edu.cit.caones.splitshare.dto.request.UpdateProfileRequest;
 import edu.cit.caones.splitshare.dto.response.ApiResponse;
 import edu.cit.caones.splitshare.dto.response.UserConnectionDto;
 import edu.cit.caones.splitshare.dto.response.UserActivityDto;
+import edu.cit.caones.splitshare.dto.response.UserProfileStatsDto;
+import edu.cit.caones.splitshare.dto.response.UserDto;
 import edu.cit.caones.splitshare.service.UserActivityService;
 import edu.cit.caones.splitshare.service.UserSocialService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +26,16 @@ public class UserController {
     @GetMapping("/me/history")
     public ResponseEntity<ApiResponse<List<UserActivityDto>>> getMyHistory(Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.ok(userActivityService.getMyHistory(authentication.getName())));
+    }
+
+    @GetMapping("/me/stats")
+    public ResponseEntity<ApiResponse<UserProfileStatsDto>> getProfileStats(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.ok(userSocialService.getProfileStats(authentication.getName())));
+    }
+
+    @PutMapping("/me")
+    public ResponseEntity<ApiResponse<UserDto>> updateProfile(@RequestBody UpdateProfileRequest request, Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.ok(userSocialService.updateProfile(request, authentication.getName())));
     }
 
     @GetMapping("/search")

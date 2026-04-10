@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { useAuth } from "../context/AuthContext";
-import { GROUPS, SOCIAL } from "../data/mockData";
+import { userApi } from "../services/userService";
+import type { UserProfileStatsDto } from "../types/social";
 
 export default function Profile() {
-  const { user } = useAuth();
+  const { user, login, token } = useAuth();
   const [settingsFirstName, setSettingsFirstName] = useState("");
   const [settingsLastName, setSettingsLastName] = useState("");
   const [settingsEmail, setSettingsEmail] = useState("");
@@ -11,6 +12,7 @@ export default function Profile() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordNotice, setPasswordNotice] = useState("");
+  const [stats, setStats] = useState<UserProfileStatsDto | null>(null);
 
   useEffect(() => {
     setSettingsFirstName(user?.firstname ?? "");
@@ -18,8 +20,32 @@ export default function Profile() {
     setSettingsEmail(user?.email ?? "");
   }, [user]);
 
-  const saveProfileSettings = () => {
-    setSettingsNotice("Settings saved successfully.");
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await userApi.getProfileStats();
+        setStats(response.data.data);
+      } catch (error) {
+        console.error("Failed to fetch profile stats", error);
+      }
+    };
+    fetchStats();
+  }, []);
+
+  const saveProfileSettings = async () => {
+    try {
+      const response = await userApi.updateProfile(settingsFirstName, settingsLastName);
+      if (response.data.success && response.data.data && token) {
+        const updatedUser = response.data.data;
+        const refreshToken = localStorage.getItem('refreshToken') || '';
+        login(updatedUser, token, refreshToken);
+        setSettingsNotice("Settings saved successfully.");
+        setTimeout(() => setSettingsNotice(""), 3000);
+      }
+    } catch (error) {
+      console.error("Failed to update profile", error);
+      setSettingsNotice("Failed to save settings. Please try again.");
+    }
   };
 
   const updatePassword = () => {
@@ -57,15 +83,15 @@ export default function Profile() {
           <p className="text-xs text-gray-500">{user?.email}</p>
           <div className="mt-5 grid grid-cols-3 gap-6">
             <div>
-              <p className="text-lg font-bold text-gray-900">{GROUPS.length}</p>
+              <p className="text-lg font-bold text-gray-900">{stats?.groupsCount ?? 0}</p>
               <p className="text-xs text-gray-500 uppercase tracking-wide">Groups</p>
             </div>
             <div>
-              <p className="text-lg font-bold text-gray-900">{SOCIAL.followers}</p>
+              <p className="text-lg font-bold text-gray-900">{stats?.followersCount ?? 0}</p>
               <p className="text-xs text-gray-500 uppercase tracking-wide">Followers</p>
             </div>
             <div>
-              <p className="text-lg font-bold text-gray-900">{SOCIAL.following}</p>
+              <p className="text-lg font-bold text-gray-900">{stats?.followingCount ?? 0}</p>
               <p className="text-xs text-gray-500 uppercase tracking-wide">Following</p>
             </div>
           </div>

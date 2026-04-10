@@ -17,3 +17,9 @@ export interface UserActivityDto {
   positive: boolean;
   createdAt: string;
 }
+
+export interface UserProfileStatsDto {
+  groupsCount: number;
+  followersCount: number;
+  followingCount: number;
+}
