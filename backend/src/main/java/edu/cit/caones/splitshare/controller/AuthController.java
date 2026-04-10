@@ -4,7 +4,7 @@ import edu.cit.caones.splitshare.dto.request.LoginRequest;
 import edu.cit.caones.splitshare.dto.request.RegisterRequest;
 import edu.cit.caones.splitshare.dto.response.ApiResponse;
 import edu.cit.caones.splitshare.dto.response.AuthData;
-import edu.cit.caones.splitshare.service.AuthService;
+import edu.cit.caones.splitshare.facade.AuthFacade;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class AuthController {
 
-    private final AuthService authService;
+    private final AuthFacade authFacade;
 
     /**
      * POST /api/v1/auth/register
@@ -26,7 +26,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthData>> register(
             @Valid @RequestBody RegisterRequest request) {
 
-        AuthData data = authService.register(request);
+        AuthData data = authFacade.register(request);
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(ApiResponse.ok(data));
@@ -40,7 +40,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<AuthData>> login(
             @Valid @RequestBody LoginRequest request) {
 
-        AuthData data = authService.login(request);
+        AuthData data = authFacade.login(request);
         return ResponseEntity.ok(ApiResponse.ok(data));
     }
 }

@@ -1,13 +1,18 @@
 package edu.cit.caones.splitshare.service;
 
+import edu.cit.caones.splitshare.adapter.AdminAuditLogDtoAdapter;
+import edu.cit.caones.splitshare.adapter.AdminUserDtoAdapter;
 import edu.cit.caones.splitshare.dto.response.AdminAuditLogDto;
 import edu.cit.caones.splitshare.dto.response.AdminUserDto;
 import edu.cit.caones.splitshare.entity.AdminAuditLog;
 import edu.cit.caones.splitshare.entity.Role;
 import edu.cit.caones.splitshare.entity.User;
+import edu.cit.caones.splitshare.event.UserStatusChangedEvent;
 import edu.cit.caones.splitshare.repository.AdminAuditLogRepository;
 import edu.cit.caones.splitshare.repository.UserRepository;
+import edu.cit.caones.splitshare.strategy.UserStatusActionStrategy;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
@@ -21,11 +26,15 @@ public class AdminService {
 
     private final UserRepository userRepository;
     private final AdminAuditLogRepository adminAuditLogRepository;
+    private final AdminUserDtoAdapter adminUserDtoAdapter;
+    private final AdminAuditLogDtoAdapter auditLogDtoAdapter;
+    private final List<UserStatusActionStrategy> statusStrategies;
+    private final ApplicationEventPublisher eventPublisher;
 
     public List<AdminUserDto> listUsers() {
         return userRepository.findAll(Sort.by(Sort.Direction.DESC, "createdAt"))
                 .stream()
-                .map(this::toAdminUserDto)
+                .map(adminUserDtoAdapter::adapt)
                 .toList();
     }
 
@@ -40,20 +49,18 @@ public class AdminService {
         user.setEnabled(enabled);
         userRepository.save(user);
 
-        String action = enabled ? "USER_REACTIVATED" : "USER_SUSPENDED";
-        String details = enabled
-                ? "Admin reactivated user account"
-                : "Admin suspended user account";
+        // Use Strategy pattern to determine action metadata
+        UserStatusActionStrategy strategy = statusStrategies.stream()
+                .filter(s -> s.supports(enabled))
+                .findFirst()
+                .orElseThrow(() -> new IllegalArgumentException("No strategy found for status: " + enabled));
 
-        adminAuditLogRepository.save(AdminAuditLog.builder()
-                .action(action)
-                .actorEmail(actorEmail)
-                .targetUserId(user.getId())
-                .targetUserEmail(user.getEmail())
-                .details(details)
-                .build());
+        // Publish event (Observer pattern) - listeners will handle audit logging
+        eventPublisher.publishEvent(
+                new UserStatusChangedEvent(this, actorEmail, user, strategy.getAction(), strategy.getDetails())
+        );
 
-        return toAdminUserDto(user);
+        return adminUserDtoAdapter.adapt(user);
     }
 
     public List<AdminAuditLogDto> listAuditLogs(int limit) {
@@ -62,31 +69,7 @@ public class AdminService {
         return adminAuditLogRepository
                 .findAll(PageRequest.of(0, safeLimit, Sort.by(Sort.Direction.DESC, "createdAt")))
                 .stream()
-                .map(this::toAuditDto)
+                .map(auditLogDtoAdapter::adapt)
                 .toList();
-    }
-
-    private AdminUserDto toAdminUserDto(User user) {
-        return AdminUserDto.builder()
-                .id(user.getId())
-                .email(user.getEmail())
-                .firstname(user.getFirstname())
-                .lastname(user.getLastname())
-                .role(user.getRole().name())
-                .enabled(user.isEnabled())
-                .createdAt(user.getCreatedAt() != null ? user.getCreatedAt().toString() : null)
-                .build();
-    }
-
-    private AdminAuditLogDto toAuditDto(AdminAuditLog log) {
-        return AdminAuditLogDto.builder()
-                .id(log.getId())
-                .action(log.getAction())
-                .actorEmail(log.getActorEmail())
-                .targetUserId(log.getTargetUserId())
-                .targetUserEmail(log.getTargetUserEmail())
-                .details(log.getDetails())
-                .createdAt(log.getCreatedAt() != null ? log.getCreatedAt().toString() : null)
-                .build();
     }
 }
