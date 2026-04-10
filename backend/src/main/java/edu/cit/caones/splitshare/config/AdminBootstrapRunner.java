@@ -48,7 +48,7 @@ public class AdminBootstrapRunner implements CommandLineRunner {
             );
         }
 
-        userRepository.findByEmail(normalizedEmail).ifPresentOrElse(existingUser -> {
+        userRepository.findByEmailIgnoreCase(normalizedEmail).ifPresentOrElse(existingUser -> {
             existingUser.setRole(Role.ROLE_ADMIN);
             existingUser.setEnabled(true);
             existingUser.setPassword(passwordEncoder.encode(password));

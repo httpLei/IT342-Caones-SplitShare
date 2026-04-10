@@ -30,7 +30,7 @@ public class AuthService {
     private final UserFactory userFactory;
 
     public AuthData register(RegisterRequest request) {
-        if (userRepository.existsByEmail(request.getEmail())) {
+        if (userRepository.existsByEmailIgnoreCase(request.getEmail())) {
             throw new DuplicateEmailException("Email is already in use");
         }
 
@@ -60,7 +60,7 @@ public class AuthService {
             throw new InvalidCredentialsException("Email or password is incorrect");
         }
 
-        User user = userRepository.findByEmail(request.getEmail())
+        User user = userRepository.findByEmailIgnoreCase(request.getEmail())
                 .orElseThrow(() -> new InvalidCredentialsException("Email or password is incorrect"));
 
         String accessToken  = jwtService.generateToken(user);
