@@ -72,6 +72,42 @@ public class UserSocialService {
                 .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<UserConnectionDto> getFollowers(String currentUserEmail) {
+        User me = getCurrentUser(currentUserEmail);
+
+        Set<Long> followingIds = new HashSet<>(userFollowRepository.findFollowingIds(me.getId()));
+        Set<Long> followerIds = new HashSet<>(userFollowRepository.findFollowerIds(me.getId()));
+
+        if (followerIds.isEmpty()) {
+            return List.of();
+        }
+
+        return userRepository.findAllById(followerIds)
+                .stream()
+                .map(user -> toConnectionDto(user, followingIds, followerIds))
+                .sorted((a, b) -> (a.getFirstname() + " " + a.getLastname()).compareToIgnoreCase(b.getFirstname() + " " + b.getLastname()))
+                .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserConnectionDto> getFollowing(String currentUserEmail) {
+        User me = getCurrentUser(currentUserEmail);
+
+        Set<Long> followingIds = new HashSet<>(userFollowRepository.findFollowingIds(me.getId()));
+        Set<Long> followerIds = new HashSet<>(userFollowRepository.findFollowerIds(me.getId()));
+
+        if (followingIds.isEmpty()) {
+            return List.of();
+        }
+
+        return userRepository.findAllById(followingIds)
+                .stream()
+                .map(user -> toConnectionDto(user, followingIds, followerIds))
+                .sorted((a, b) -> (a.getFirstname() + " " + a.getLastname()).compareToIgnoreCase(b.getFirstname() + " " + b.getLastname()))
+                .toList();
+    }
+
     @Transactional
     public void followUser(Long targetUserId, String currentUserEmail) {
         User me = getCurrentUser(currentUserEmail);

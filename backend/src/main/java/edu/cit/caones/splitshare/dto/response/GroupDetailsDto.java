@@ -13,6 +13,7 @@ public class GroupDetailsDto {
     private Long id;
     private String name;
     private List<String> members;
+    private List<String> memberEmails;
     private BigDecimal total;
     private BigDecimal balance;
     private Instant createdAt;

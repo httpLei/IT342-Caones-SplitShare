@@ -1,11 +1,15 @@
 import { useEffect, useState } from "react";
-import { Link, Navigate, useParams } from "react-router-dom";
+import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import AddExpenseModal from "../components/AddExpenseModal";
+import EditGroupModal from "../components/EditGroupModal";
 import { groupApi } from "../services/groupService";
+import { userApi } from "../services/userService";
 import type { GroupDetailsDto } from "../types/groups";
+import type { UserConnectionDto } from "../types/social";
 import { formatPeso, signedPeso } from "../utils/format";
 
 export default function GroupDetails() {
+  const navigate = useNavigate();
   const { groupId } = useParams();
   const id = Number(groupId);
   const [group, setGroup] = useState<GroupDetailsDto | null>(null);
@@ -15,6 +19,11 @@ export default function GroupDetails() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [success, setSuccess] = useState("");
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editSaving, setEditSaving] = useState(false);
+  const [editError, setEditError] = useState("");
+  const [mutuals, setMutuals] = useState<UserConnectionDto[]>([]);
+
 
   useEffect(() => {
     if (!Number.isFinite(id)) return;
@@ -24,6 +33,12 @@ export default function GroupDetails() {
       .then((response) => setGroup(response.data.data ?? null))
       .catch((err) => setError(err?.response?.data?.error?.message ?? "Unable to load group."))
       .finally(() => setLoading(false));
+
+    userApi.getMutuals()
+      .then((response) => setMutuals(response.data.data ?? []))
+      .catch(() => {
+        // Non-blocking for edit modal; it will simply show no mutual users.
+      });
   }, [id]);
 
   if (!Number.isFinite(id)) {
@@ -34,7 +49,7 @@ export default function GroupDetails() {
     return <Navigate to="/groups" replace />;
   }
 
-  const handleAddExpense = async (payload: { description: string; category: string; amount: number }) => {
+  const handleAddExpense = async (payload: { description: string; category: string; amount: number; receipt?: File | null }) => {
     setSaving(true);
     setSaveError("");
     setSuccess("");
@@ -47,6 +62,22 @@ export default function GroupDetails() {
       setSaveError((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message ?? "Unable to add expense.");
     } finally {
       setSaving(false);
+    }
+  };
+
+
+  const handleUpdateGroup = async (payload: { name: string; memberEmails: string[] }) => {
+    setEditSaving(true);
+    setEditError("");
+    try {
+      const response = await groupApi.updateGroup(id, payload);
+      setGroup(response.data.data ?? null);
+      setSuccess("Group updated successfully.");
+      setShowEditModal(false);
+    } catch (err: unknown) {
+      setEditError((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message ?? "Unable to update group.");
+    } finally {
+      setEditSaving(false);
     }
   };
 
@@ -76,6 +107,12 @@ export default function GroupDetails() {
           >
             Back to Groups
           </Link>
+          <button
+            onClick={() => setShowEditModal(true)}
+            className="px-4 py-2 text-sm font-bold rounded-xl border border-purple-200 text-purple-700 hover:bg-purple-50 transition"
+          >
+            Edit Group
+          </button>
           <button
             onClick={() => setShowExpenseModal(true)}
             className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white rounded-xl transition cursor-pointer"
@@ -119,7 +156,11 @@ export default function GroupDetails() {
         <h3 className="text-base font-bold text-gray-900 mb-3">Expenses</h3>
         <div className="space-y-2">
           {group.expenses.map((expense) => (
-            <div key={expense.id} className="rounded-xl border border-gray-100 shadow-sm px-4 py-3 flex items-center justify-between gap-4">
+            <button
+              key={expense.id}
+              onClick={() => navigate(`/groups/${id}/expenses/${expense.id}`)}
+              className="w-full rounded-xl border border-gray-100 shadow-sm px-4 py-3 flex items-center justify-between gap-4 text-left hover:border-purple-200 transition cursor-pointer"
+            >
               <div>
                 <p className="text-sm font-semibold text-gray-800">{expense.desc}</p>
                 <p className="text-xs text-gray-400 mt-0.5">{expense.sub}</p>
@@ -130,7 +171,7 @@ export default function GroupDetails() {
                   {signedPeso(expense.share)}
                 </p>
               </div>
-            </div>
+            </button>
           ))}
         </div>
       </section>
@@ -141,6 +182,20 @@ export default function GroupDetails() {
         error={saveError}
         onClose={() => setShowExpenseModal(false)}
         onSubmit={handleAddExpense}
+      />
+
+      <EditGroupModal
+        open={showEditModal}
+        loading={editSaving}
+        error={editError}
+        groupName={group.name}
+        currentMembers={group.members.map((name, index) => ({
+          name,
+          email: group.memberEmails?.[index] ?? name,
+        }))}
+        mutuals={mutuals}
+        onClose={() => setShowEditModal(false)}
+        onSubmit={handleUpdateGroup}
       />
     </div>
   );

@@ -106,13 +106,6 @@ export default function Dashboard() {
           </div>
         )}
       </div>
-
-      <div>
-        <h2 className="text-base font-bold text-gray-800 mb-4">Main feature status</h2>
-        <div className="rounded-2xl border border-gray-100 bg-white p-5 text-sm text-gray-600">
-          Use the Groups page to create a group, then open it to add expenses and view live balances.
-        </div>
-      </div>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 package edu.cit.caones.splitshare.service;
 
 import edu.cit.caones.splitshare.dto.request.CreateGroupRequest;
+import edu.cit.caones.splitshare.dto.request.UpdateGroupRequest;
 import edu.cit.caones.splitshare.dto.response.ExpenseDto;
 import edu.cit.caones.splitshare.dto.response.GroupDetailsDto;
 import edu.cit.caones.splitshare.dto.response.GroupMemberBalanceDto;
@@ -44,13 +45,7 @@ public class GroupService {
     public GroupSummaryDto createGroup(CreateGroupRequest request, String creatorEmail) {
         User creator = getUserByEmail(creatorEmail);
 
-        Set<String> memberEmails = request.getMemberEmails() == null
-                ? Set.of()
-                : request.getMemberEmails().stream()
-                .map(String::trim)
-                .filter(email -> !email.isBlank())
-                .map(String::toLowerCase)
-                .collect(Collectors.toSet());
+        Set<String> memberEmails = normalizeEmails(request.getMemberEmails());
 
         Group group = Group.builder()
                 .name(request.getName().trim())
@@ -76,6 +71,43 @@ public class GroupService {
         return toSummaryDto(saved, creatorEmail);
     }
 
+    @Transactional
+    public GroupDetailsDto updateGroup(Long groupId, UpdateGroupRequest request, String currentUserEmail) {
+        Group group = getAccessibleGroupForUpdate(groupId, currentUserEmail);
+        boolean changed = false;
+
+        if (request.getName() != null && !request.getName().trim().isBlank()) {
+            group.setName(request.getName().trim());
+            changed = true;
+        }
+
+        Set<String> memberEmails = normalizeEmails(request.getMemberEmails());
+        Set<String> existingMembers = group.getMembers().stream()
+                .map(member -> member.getUser().getEmail().toLowerCase(Locale.ROOT))
+                .collect(Collectors.toSet());
+
+        for (String email : memberEmails) {
+            if (email.equalsIgnoreCase(currentUserEmail) || existingMembers.contains(email)) {
+                continue;
+            }
+
+            if (!userSocialService.isMutualByEmails(currentUserEmail, email)) {
+                throw new IllegalArgumentException("You can only add users with a mutual follow relationship: " + email);
+            }
+
+            User member = getUserByEmail(email);
+            group.addMember(createGroupMember(member));
+            changed = true;
+        }
+
+        if (!changed) {
+            throw new IllegalArgumentException("No updates were provided");
+        }
+
+        Group saved = groupRepository.save(group);
+        return toDetailsDto(saved, currentUserEmail);
+    }
+
     @Transactional(readOnly = true)
     public List<GroupSummaryDto> getMyGroups(String currentUserEmail) {
         return groupRepository.findAllVisibleToUser(currentUserEmail)
@@ -96,6 +128,10 @@ public class GroupService {
                 .orElseThrow(() -> new NoSuchElementException("Group not found"));
         ensureMember(group, currentUserEmail);
         return group;
+    }
+
+    public Group getAccessibleGroupForUpdate(Long groupId, String currentUserEmail) {
+        return getAccessibleGroup(groupId, currentUserEmail);
     }
 
     @Transactional(readOnly = true)
@@ -145,6 +181,9 @@ public class GroupService {
                 .members(group.getMembers().stream()
                         .map(member -> member.getUser().getFirstname() + " " + member.getUser().getLastname())
                         .toList())
+                .memberEmails(group.getMembers().stream()
+                    .map(member -> member.getUser().getEmail())
+                    .toList())
                 .total(total)
                 .balance(balances.getOrDefault(currentUserEmail.toLowerCase(Locale.ROOT), BigDecimal.ZERO))
                 .createdAt(group.getCreatedAt())
@@ -166,6 +205,18 @@ public class GroupService {
                 .build();
     }
 
+    private Set<String> normalizeEmails(List<String> emails) {
+        if (emails == null) {
+            return Set.of();
+        }
+
+        return emails.stream()
+                .map(String::trim)
+                .filter(email -> !email.isBlank())
+                .map(String::toLowerCase)
+                .collect(Collectors.toSet());
+    }
+
     private ExpenseDto toExpenseDto(Expense expense, Map<String, BigDecimal> balances, String currentUserEmail) {
         String payerEmail = expense.getPaidBy().getEmail().toLowerCase(Locale.ROOT);
         BigDecimal share = expense.getAmount().divide(BigDecimal.valueOf(Math.max(1, expense.getGroup().getMembers().size())), 2, RoundingMode.HALF_UP);
@@ -176,11 +227,15 @@ public class GroupService {
 
         return ExpenseDto.builder()
                 .id(expense.getId())
+            .groupId(expense.getGroup().getId())
+                .description(expense.getDescription())
+                .category(expense.getCategory())
                 .desc(expense.getPaidBy().getFirstname() + " added " + expense.getDescription())
                 .sub(expense.getCategory() + " • " + DATE_FORMAT.format(expense.getCreatedAt()))
                 .amount(expense.getAmount().setScale(2, RoundingMode.HALF_UP))
             .share(impact.setScale(2, RoundingMode.HALF_UP))
                 .positive(positive)
+                .receiptUrl(expense.getReceiptUrl())
                 .createdAt(expense.getCreatedAt())
                 .build();
     }

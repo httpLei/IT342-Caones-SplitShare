@@ -5,6 +5,8 @@ import type { UserActivityDto, UserConnectionDto, UserProfileStatsDto } from '..
 export const userApi = {
   search: (query: string) => api.get<ApiResponse<UserConnectionDto[]>>('/users/search', { params: { q: query } }),
   getMutuals: () => api.get<ApiResponse<UserConnectionDto[]>>('/users/mutuals'),
+  getFollowers: () => api.get<ApiResponse<UserConnectionDto[]>>('/users/me/followers'),
+  getFollowing: () => api.get<ApiResponse<UserConnectionDto[]>>('/users/me/following'),
   getMyHistory: () => api.get<ApiResponse<UserActivityDto[]>>('/users/me/history'),
   getProfileStats: () => api.get<ApiResponse<UserProfileStatsDto>>('/users/me/stats'),
   updateProfile: (firstname: string, lastname: string) =>

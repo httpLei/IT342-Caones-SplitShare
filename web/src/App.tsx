@@ -13,7 +13,6 @@ import ActivityDetails from "./pages/ActivityDetails";
 import Profile from "./pages/Profile";
 import Settings from "./pages/Settings";
 import Admin from "./pages/Admin";
-import Connections from "./pages/Connections";
 
 export default function App() {
   return (
@@ -31,9 +30,9 @@ export default function App() {
             }
           >
             <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/connections" element={<Connections />} />
             <Route path="/groups" element={<Groups />} />
             <Route path="/groups/:groupId" element={<GroupDetails />} />
+            <Route path="/groups/:groupId/expenses/:activityId" element={<ActivityDetails />} />
             <Route path="/activity" element={<Activity />} />
             <Route path="/activity/:activityId" element={<ActivityDetails />} />
             <Route path="/profile" element={<Profile />} />

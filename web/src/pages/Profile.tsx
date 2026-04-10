@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { userApi } from "../services/userService";
-import type { UserProfileStatsDto } from "../types/social";
+import type { UserConnectionDto, UserProfileStatsDto } from "../types/social";
 
 export default function Profile() {
+  const navigate = useNavigate();
   const { user, login, token } = useAuth();
   const [settingsFirstName, setSettingsFirstName] = useState("");
   const [settingsLastName, setSettingsLastName] = useState("");
@@ -13,6 +15,13 @@ export default function Profile() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordNotice, setPasswordNotice] = useState("");
   const [stats, setStats] = useState<UserProfileStatsDto | null>(null);
+  const [showFollowersModal, setShowFollowersModal] = useState(false);
+  const [showFollowingModal, setShowFollowingModal] = useState(false);
+  const [followers, setFollowers] = useState<UserConnectionDto[]>([]);
+  const [following, setFollowing] = useState<UserConnectionDto[]>([]);
+  const [connectionsLoading, setConnectionsLoading] = useState(false);
+  const [connectionsError, setConnectionsError] = useState("");
+  const [connectionActionUserId, setConnectionActionUserId] = useState<number | null>(null);
 
   useEffect(() => {
     setSettingsFirstName(user?.firstname ?? "");
@@ -20,16 +29,27 @@ export default function Profile() {
     setSettingsEmail(user?.email ?? "");
   }, [user]);
 
+  const loadProfileStats = async () => {
+    try {
+      const response = await userApi.getProfileStats();
+      setStats(response.data.data);
+    } catch (error) {
+      console.error("Failed to fetch profile stats", error);
+    }
+  };
+
+  const loadFollowers = async () => {
+    const response = await userApi.getFollowers();
+    setFollowers(response.data.data ?? []);
+  };
+
+  const loadFollowing = async () => {
+    const response = await userApi.getFollowing();
+    setFollowing(response.data.data ?? []);
+  };
+
   useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await userApi.getProfileStats();
-        setStats(response.data.data);
-      } catch (error) {
-        console.error("Failed to fetch profile stats", error);
-      }
-    };
-    fetchStats();
+    loadProfileStats();
   }, []);
 
   const saveProfileSettings = async () => {
@@ -67,6 +87,62 @@ export default function Profile() {
     setConfirmPassword("");
   };
 
+  const openFollowers = async () => {
+    setConnectionsLoading(true);
+    setConnectionsError("");
+    setShowFollowersModal(true);
+    try {
+      await loadFollowers();
+    } catch {
+      setConnectionsError("Unable to load followers.");
+    } finally {
+      setConnectionsLoading(false);
+    }
+  };
+
+  const openFollowing = async () => {
+    setConnectionsLoading(true);
+    setConnectionsError("");
+    setShowFollowingModal(true);
+    try {
+      await loadFollowing();
+    } catch {
+      setConnectionsError("Unable to load following users.");
+    } finally {
+      setConnectionsLoading(false);
+    }
+  };
+
+  const closeConnectionsModals = () => {
+    setShowFollowersModal(false);
+    setShowFollowingModal(false);
+    setConnectionsError("");
+  };
+
+  const getConnectionActionLabel = (person: UserConnectionDto) => {
+    if (person.following) return "Unfollow";
+    if (person.followedBy) return "Follow back";
+    return "Follow";
+  };
+
+  const toggleConnectionFollow = async (person: UserConnectionDto) => {
+    setConnectionActionUserId(person.id);
+    setConnectionsError("");
+    try {
+      if (person.following) {
+        await userApi.unfollow(person.id);
+      } else {
+        await userApi.follow(person.id);
+      }
+
+      await Promise.all([loadProfileStats(), loadFollowers(), loadFollowing()]);
+    } catch {
+      setConnectionsError("Unable to update follow status.");
+    } finally {
+      setConnectionActionUserId(null);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -82,18 +158,30 @@ export default function Profile() {
           <h2 className="mt-3 text-lg font-bold text-gray-900">{user?.firstname} {user?.lastname}</h2>
           <p className="text-xs text-gray-500">{user?.email}</p>
           <div className="mt-5 grid grid-cols-3 gap-6">
-            <div>
+            <button
+              type="button"
+              onClick={() => navigate("/groups")}
+              className="rounded-xl p-2 transition hover:bg-gray-50"
+            >
               <p className="text-lg font-bold text-gray-900">{stats?.groupsCount ?? 0}</p>
               <p className="text-xs text-gray-500 uppercase tracking-wide">Groups</p>
-            </div>
-            <div>
+            </button>
+            <button
+              type="button"
+              onClick={openFollowers}
+              className="rounded-xl p-2 transition hover:bg-gray-50"
+            >
               <p className="text-lg font-bold text-gray-900">{stats?.followersCount ?? 0}</p>
               <p className="text-xs text-gray-500 uppercase tracking-wide">Followers</p>
-            </div>
-            <div>
+            </button>
+            <button
+              type="button"
+              onClick={openFollowing}
+              className="rounded-xl p-2 transition hover:bg-gray-50"
+            >
               <p className="text-lg font-bold text-gray-900">{stats?.followingCount ?? 0}</p>
               <p className="text-xs text-gray-500 uppercase tracking-wide">Following</p>
-            </div>
+            </button>
           </div>
         </div>
       </section>
@@ -129,6 +217,56 @@ export default function Profile() {
           <button onClick={updatePassword} className="px-5 py-2.5 text-sm font-bold text-white rounded-xl transition cursor-pointer" style={{ background: "#662498" }}>Update password</button>
         </div>
       </section>
+
+      {(showFollowersModal || showFollowingModal) && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={closeConnectionsModals}>
+          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900">{showFollowersModal ? "Followers" : "Following"}</h3>
+              <button
+                type="button"
+                onClick={closeConnectionsModals}
+                className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+              >
+                Close
+              </button>
+            </div>
+
+            {connectionsLoading ? (
+              <div className="flex items-center justify-center py-10">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-200 border-t-purple-700" />
+              </div>
+            ) : connectionsError ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{connectionsError}</div>
+            ) : (
+              <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
+                {(showFollowersModal ? followers : following).length === 0 ? (
+                  <p className="py-6 text-center text-sm text-gray-500">No users found.</p>
+                ) : (
+                  (showFollowersModal ? followers : following).map((person) => (
+                    <div key={person.id} className="rounded-xl border border-gray-100 px-4 py-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-gray-900">{person.firstname} {person.lastname}</p>
+                          <p className="text-xs text-gray-500">{person.email}</p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => toggleConnectionFollow(person)}
+                          disabled={connectionActionUserId === person.id}
+                          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${person.following ? "border border-red-200 text-red-700 hover:bg-red-50" : "border border-purple-200 text-purple-700 hover:bg-purple-50"}`}
+                        >
+                          {connectionActionUserId === person.id ? "Please wait..." : getConnectionActionLabel(person)}
+                        </button>
+                      </div>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

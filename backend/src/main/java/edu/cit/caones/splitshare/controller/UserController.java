@@ -51,6 +51,16 @@ public class UserController {
         return ResponseEntity.ok(ApiResponse.ok(userSocialService.getMutuals(authentication.getName())));
     }
 
+    @GetMapping("/me/followers")
+    public ResponseEntity<ApiResponse<List<UserConnectionDto>>> getFollowers(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.ok(userSocialService.getFollowers(authentication.getName())));
+    }
+
+    @GetMapping("/me/following")
+    public ResponseEntity<ApiResponse<List<UserConnectionDto>>> getFollowing(Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.ok(userSocialService.getFollowing(authentication.getName())));
+    }
+
     @PostMapping("/{id}/follow")
     public ResponseEntity<ApiResponse<String>> followUser(@PathVariable Long id, Authentication authentication) {
         userSocialService.followUser(id, authentication.getName());
