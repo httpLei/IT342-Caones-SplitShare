@@ -12,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.security.access.AccessDeniedException;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -59,6 +60,8 @@ public class ExpenseService {
             throw new IllegalArgumentException("Expense does not belong to this group");
         }
 
+        ensureExpenseOwner(expense, currentUserEmail);
+
         expense.setDescription(request.getDescription().trim());
         expense.setCategory(request.getCategory().trim());
         expense.setAmount(request.getAmount().setScale(2, RoundingMode.HALF_UP));
@@ -82,6 +85,8 @@ public class ExpenseService {
             throw new IllegalArgumentException("Expense does not belong to this group");
         }
 
+        ensureExpenseOwner(expense, currentUserEmail);
+
         expenseRepository.delete(expense);
         return groupService.getGroupDetails(groupId, currentUserEmail);
     }
@@ -95,6 +100,7 @@ public class ExpenseService {
     @Transactional
     public ExpenseDto updateExpense(Long expenseId, UpdateExpenseRequest request, MultipartFile receipt, String currentUserEmail) {
         Expense expense = getAccessibleExpense(expenseId, currentUserEmail);
+        ensureExpenseOwner(expense, currentUserEmail);
 
         expense.setDescription(request.getDescription().trim());
         expense.setCategory(request.getCategory().trim());
@@ -112,6 +118,7 @@ public class ExpenseService {
     @Transactional
     public void deleteExpense(Long expenseId, String currentUserEmail) {
         Expense expense = getAccessibleExpense(expenseId, currentUserEmail);
+        ensureExpenseOwner(expense, currentUserEmail);
         expenseRepository.delete(expense);
     }
 
@@ -139,6 +146,8 @@ public class ExpenseService {
         return ExpenseDto.builder()
                 .id(expense.getId())
                 .groupId(expense.getGroup().getId())
+                .paidByEmail(expense.getPaidBy().getEmail())
+                .paidByName(expense.getPaidBy().getFirstname() + " " + expense.getPaidBy().getLastname())
                 .description(expense.getDescription())
                 .category(expense.getCategory())
                 .desc(desc)
@@ -149,6 +158,12 @@ public class ExpenseService {
                 .receiptUrl(expense.getReceiptUrl())
                 .createdAt(expense.getCreatedAt())
                 .build();
+    }
+
+    private void ensureExpenseOwner(Expense expense, String currentUserEmail) {
+        if (!expense.getPaidBy().getEmail().equalsIgnoreCase(currentUserEmail)) {
+            throw new AccessDeniedException("Only the user who created this expense can edit or delete it");
+        }
     }
 
     private String storeReceipt(MultipartFile receipt) {

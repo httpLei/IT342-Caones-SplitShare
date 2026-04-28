@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import AddExpenseModal from "../components/AddExpenseModal";
 import EditGroupModal from "../components/EditGroupModal";
 import { groupApi } from "../services/groupService";
@@ -10,6 +11,7 @@ import { formatPeso, signedPeso } from "../utils/format";
 
 export default function GroupDetails() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { groupId } = useParams();
   const id = Number(groupId);
   const [group, setGroup] = useState<GroupDetailsDto | null>(null);
@@ -22,6 +24,7 @@ export default function GroupDetails() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editSaving, setEditSaving] = useState(false);
   const [editError, setEditError] = useState("");
+  const [settlingEmail, setSettlingEmail] = useState<string | null>(null);
   const [mutuals, setMutuals] = useState<UserConnectionDto[]>([]);
 
 
@@ -93,12 +96,33 @@ export default function GroupDetails() {
     return <Navigate to="/groups" replace />;
   }
 
+  const currentEmail = user?.email?.toLowerCase() ?? "";
+  // Show all other members even when their balance is 0 so users can still see who was involved
+  const displayBalances = group.balances.filter((b) => b.email.toLowerCase() !== currentEmail);
+
+  const totalToReceive = displayBalances.reduce((sum, b) => sum + (b.positive ? b.amount : 0), 0);
+
+  const handleSettle = async (counterpartEmail: string) => {
+    setSuccess("");
+    setSaveError("");
+    setSettlingEmail(counterpartEmail);
+    try {
+      const response = await groupApi.settleBalance(id, counterpartEmail);
+      setGroup(response.data.data ?? null);
+      setSuccess("Settlement confirmation recorded. Balance clears after both members click Settle.");
+    } catch (err: unknown) {
+      setSaveError((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message ?? "Unable to settle this balance.");
+    } finally {
+      setSettlingEmail(null);
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">{group.name}</h1>
-          <p className="text-xs text-gray-500 mt-1">{group.members.length} members, {formatPeso(group.total)} total</p>
+          <p className="text-xs text-gray-500 mt-1">{group.members.length} members, you will receive {formatPeso(totalToReceive)} total</p>
         </div>
         <div className="flex items-center gap-3">
           <Link
@@ -124,27 +148,51 @@ export default function GroupDetails() {
       </div>
 
       {success && <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">{success}</div>}
+      {saveError && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{saveError}</div>}
 
       <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
         <h3 className="text-base font-bold text-gray-900 mb-3">Balances</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {group.balances.map((balance) => (
+          {displayBalances.map((balance) => (
             <div key={balance.name} className="rounded-xl border border-gray-100 shadow-sm px-3 py-2 flex items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-gray-600" style={{ background: "#e5e7eb" }}>
                   {balance.initial}
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-gray-800">{balance.name}</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-xs font-semibold text-gray-800">{balance.name}</p>
+                    {balance.settlementPending && (
+                      <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold rounded-full bg-amber-100 text-amber-800">
+                        Pending
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[10px] text-gray-500">{balance.positive ? "owes you" : "you owe"}</p>
+                  {balance.settlementPending && (
+                    <p className="text-[10px] text-amber-600 mt-0.5">
+                      {balance.settledByCurrentUser ? "Waiting for other user" : "Needs your confirmation"}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-2">
                 <p className="text-xs font-bold" style={{ color: balance.positive ? "#16a34a" : "#dc2626" }}>
                   {signedPeso(balance.amount)}
                 </p>
-                <button className="px-3 py-1 text-xs font-semibold rounded-lg cursor-pointer" style={{ background: "#dbeafe", color: "#1e3a8a" }}>
-                  Settle
+                <button
+                  onClick={() => handleSettle(balance.email)}
+                  disabled={settlingEmail === balance.email || balance.amount <= 0 || (balance.settlementPending && balance.settledByCurrentUser)}
+                  className="px-3 py-1 text-xs font-semibold rounded-lg cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+                  style={{ background: "#dbeafe", color: "#1e3a8a" }}
+                >
+                  {settlingEmail === balance.email
+                    ? "Settling..."
+                    : balance.settlementPending && balance.settledByCurrentUser
+                      ? "Waiting..."
+                      : balance.settlementPending
+                        ? "Confirm Settle"
+                        : "Settle"}
                 </button>
               </div>
             </div>

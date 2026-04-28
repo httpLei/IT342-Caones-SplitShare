@@ -23,6 +23,8 @@ export const groupApi = {
     api.put<ApiResponse<GroupDetailsDto>>(`/groups/${groupId}/expenses/${expenseId}`, buildExpenseFormData(data)),
   deleteExpense: (groupId: number, expenseId: number) =>
     api.delete<ApiResponse<GroupDetailsDto>>(`/groups/${groupId}/expenses/${expenseId}`),
+  settleBalance: (groupId: number, counterpartEmail: string) =>
+    api.post<ApiResponse<GroupDetailsDto>>(`/groups/${groupId}/settlements`, { counterpartEmail }),
 };
 
 export const expenseApi = {

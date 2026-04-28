@@ -11,6 +11,8 @@ import java.time.Instant;
 public class ExpenseDto {
     private Long id;
     private Long groupId;
+    private String paidByEmail;
+    private String paidByName;
     private String description;
     private String category;
     private String desc;

@@ -48,6 +48,29 @@ export default function Groups() {
     });
   }, []);
 
+  useEffect(() => {
+    const keyword = connectionQuery.trim();
+
+    if (!keyword) {
+      setConnectionResults([]);
+      setConnectionError("");
+      setConnectionLoading(false);
+      return;
+    }
+
+    setConnectionLoading(true);
+    setConnectionError("");
+
+    const timer = window.setTimeout(() => {
+      userApi.search(keyword)
+        .then((response) => setConnectionResults(response.data.data ?? []))
+        .catch((err: unknown) => setConnectionError(getErrorMessage(err, "Unable to search users.")))
+        .finally(() => setConnectionLoading(false));
+    }, 300);
+
+    return () => window.clearTimeout(timer);
+  }, [connectionQuery]);
+
   const filteredGroups = useMemo(() => {
     const keyword = groupSearch.trim().toLowerCase();
     if (!keyword) return groups;
@@ -73,8 +96,7 @@ export default function Groups() {
     }
   };
 
-  const handleSearchUsers = async () => {
-    const keyword = connectionQuery.trim();
+  const handleSearchUsers = async (keyword = connectionQuery.trim()) => {
     setConnectionError("");
 
     if (!keyword) {
@@ -139,7 +161,7 @@ export default function Groups() {
               className="flex-1 rounded-xl border border-gray-200 px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-purple-200"
             />
             <button
-              onClick={handleSearchUsers}
+              onClick={() => handleSearchUsers()}
               className="rounded-xl px-5 py-2.5 text-sm font-bold text-white transition cursor-pointer"
               style={{ background: "#662498" }}
             >

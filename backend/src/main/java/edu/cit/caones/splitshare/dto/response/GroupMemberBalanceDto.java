@@ -9,7 +9,10 @@ import java.math.BigDecimal;
 @Builder
 public class GroupMemberBalanceDto {
     private String name;
+    private String email;
     private String initial;
     private BigDecimal amount;
     private boolean positive;
+    private boolean settlementPending;
+    private boolean settledByCurrentUser;
 }

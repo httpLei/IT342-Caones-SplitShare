@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import AddExpenseModal from "../components/AddExpenseModal";
 import { expenseApi } from "../services/groupService";
 import type { ExpenseDto } from "../types/groups";
@@ -7,6 +8,7 @@ import { formatPeso, signedPeso } from "../utils/format";
 
 export default function ActivityDetails() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { activityId, groupId } = useParams();
   const id = Number(activityId);
   const gid = Number(groupId);
@@ -52,6 +54,7 @@ export default function ActivityDetails() {
   }
 
   const detail = expense;
+  const canEdit = detail.paidByEmail.toLowerCase() === (user?.email ?? "").toLowerCase();
 
   const handleUpdateExpense = async (payload: { description: string; category: string; amount: number; receipt?: File | null }) => {
     setSaving(true);
@@ -159,21 +162,23 @@ export default function ActivityDetails() {
           </div>
         </div>
 
-        <div className="flex gap-3 pt-2">
-          <button
-            onClick={() => setShowEditModal(true)}
-            className="px-4 py-2 text-sm font-bold rounded-xl border border-purple-200 text-purple-700 hover:bg-purple-50 transition"
-          >
-            Edit Expense
-          </button>
-          <button
-            onClick={handleDeleteExpense}
-            className="px-4 py-2 text-sm font-bold rounded-xl border border-red-200 text-red-700 hover:bg-red-50 transition"
-            disabled={saving}
-          >
-            Delete Expense
-          </button>
-        </div>
+        {canEdit && (
+          <div className="flex gap-3 pt-2">
+            <button
+              onClick={() => setShowEditModal(true)}
+              className="px-4 py-2 text-sm font-bold rounded-xl border border-purple-200 text-purple-700 hover:bg-purple-50 transition"
+            >
+              Edit Expense
+            </button>
+            <button
+              onClick={handleDeleteExpense}
+              className="px-4 py-2 text-sm font-bold rounded-xl border border-red-200 text-red-700 hover:bg-red-50 transition"
+              disabled={saving}
+            >
+              Delete Expense
+            </button>
+          </div>
+        )}
       </section>
 
       <AddExpenseModal

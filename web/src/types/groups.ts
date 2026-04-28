@@ -9,14 +9,19 @@ export interface GroupSummaryDto {
 
 export interface GroupMemberBalanceDto {
   name: string;
+  email: string;
   initial: string;
   amount: number;
   positive: boolean;
+  settlementPending: boolean;
+  settledByCurrentUser: boolean;
 }
 
 export interface ExpenseDto {
   id: number;
   groupId: number;
+  paidByEmail: string;
+  paidByName: string;
   description: string;
   category: string;
   desc: string;

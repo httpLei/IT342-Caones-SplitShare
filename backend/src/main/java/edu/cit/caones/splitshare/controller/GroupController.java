@@ -2,6 +2,7 @@ package edu.cit.caones.splitshare.controller;
 
 import edu.cit.caones.splitshare.dto.request.CreateExpenseRequest;
 import edu.cit.caones.splitshare.dto.request.CreateGroupRequest;
+import edu.cit.caones.splitshare.dto.request.SettleBalanceRequest;
 import edu.cit.caones.splitshare.dto.request.UpdateExpenseRequest;
 import edu.cit.caones.splitshare.dto.request.UpdateGroupRequest;
 import edu.cit.caones.splitshare.dto.response.ApiResponse;
@@ -90,6 +91,16 @@ public class GroupController {
             Authentication authentication) {
 
         GroupDetailsDto updated = expenseService.deleteExpense(groupId, expenseId, authentication.getName());
+        return ResponseEntity.ok(ApiResponse.ok(updated));
+    }
+
+    @PostMapping("/{groupId}/settlements")
+    public ResponseEntity<ApiResponse<GroupDetailsDto>> confirmSettlement(
+            @PathVariable Long groupId,
+            @Valid @RequestBody SettleBalanceRequest request,
+            Authentication authentication) {
+
+        GroupDetailsDto updated = groupService.confirmSettlement(groupId, request.getCounterpartEmail(), authentication.getName());
         return ResponseEntity.ok(ApiResponse.ok(updated));
     }
 }
