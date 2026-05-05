@@ -1,18 +1,18 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider } from "./context/AuthContext";
-import ProtectedRoute from "./components/ProtectedRoute";
-import AdminRoute from "./components/AdminRoute";
-import UserLayout from "./components/UserLayout";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import Dashboard from "./pages/Dashboard.tsx";
-import Groups from "./pages/Groups";
-import GroupDetails from "./pages/GroupDetails";
-import Activity from "./pages/Activity";
-import ActivityDetails from "./pages/ActivityDetails";
-import Profile from "./pages/Profile";
-import Settings from "./pages/Settings";
-import Admin from "./pages/Admin";
+import { AuthProvider } from "./features/auth/AuthContext";
+import ProtectedRoute from "./features/auth/components/ProtectedRoute";
+import AdminRoute from "./features/auth/components/AdminRoute";
+import UserLayout from "./features/layout/components/UserLayout";
+import Login from "./features/auth/pages/LoginPage";
+import Register from "./features/auth/pages/RegisterPage";
+import Dashboard from "./features/dashboard/pages/DashboardPage";
+import Groups from "./features/groups/pages/GroupsPage";
+import GroupDetails from "./features/groups/pages/GroupDetailsPage";
+import Activity from "./features/activity/pages/ActivityPage";
+import ActivityDetails from "./features/activity/pages/ActivityDetailsPage";
+import Profile from "./features/profile/pages/ProfilePage";
+import Settings from "./features/settings/pages/SettingsPage";
+import Admin from "./features/admin/pages/AdminPage";
 
 export default function App() {
   return (
