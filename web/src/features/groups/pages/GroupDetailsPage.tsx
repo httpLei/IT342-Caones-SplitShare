@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Edit, Plus } from "lucide-react";
 import { useAuth } from "../../auth/AuthContext";
 import AddExpenseModal from "../components/AddExpenseModal";
 import EditGroupModal from "../components/EditGroupModal";
@@ -83,11 +84,11 @@ export default function GroupDetailsPage() {
   };
 
   if (loading) {
-    return <div className="rounded-2xl border border-gray-100 bg-white p-6 text-sm text-gray-500">Loading group details...</div>;
+    return <div className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 text-sm text-gray-500 dark:text-gray-400"><div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 mb-2"></div><p>Loading group details...</p></div>;
   }
 
   if (error) {
-    return <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">{error}</div>;
+    return <div className="rounded-2xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 p-6 text-sm text-red-700 dark:text-red-300">{error}</div>;
   }
 
   if (!group) {
@@ -118,56 +119,59 @@ export default function GroupDetailsPage() {
     <div className="space-y-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">{group.name}</h1>
-          <p className="text-xs text-gray-500 mt-1">{group.members.length} members, you will receive {formatPeso(totalToReceive)} total</p>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">{group.name}</h1>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{group.members.length} members, you will receive {formatPeso(totalToReceive)} total</p>
         </div>
         <div className="flex items-center gap-3">
           <Link
             to="/groups"
-            className="px-4 py-2 text-sm font-bold rounded-xl border border-gray-200 text-gray-700 hover:bg-gray-50 transition"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-xl border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition"
           >
+            <ArrowLeft size={16} />
             Back to Groups
           </Link>
           <button
             onClick={() => setShowEditModal(true)}
-            className="px-4 py-2 text-sm font-bold rounded-xl border border-purple-200 text-purple-700 hover:bg-purple-50 transition"
+            className="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-xl border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30 transition"
           >
+            <Edit size={16} />
             Edit Group
           </button>
           <button
             onClick={() => setShowExpenseModal(true)}
-            className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white rounded-xl transition cursor-pointer"
-            style={{ background: "#662498" }}
+            className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white rounded-xl transition cursor-pointer hover:shadow-lg"
+            style={{ background: "linear-gradient(135deg, #662498 0%, #a855f7 100%)" }}
           >
-            + Add Expense
+            <Plus size={16} />
+            Add Expense
           </button>
         </div>
       </div>
 
-      {success && <div className="rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-700">{success}</div>}
-      {saveError && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{saveError}</div>}
+      {success && <div className="rounded-2xl border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/30 px-4 py-3 text-sm text-green-700 dark:text-green-300">{success}</div>}
+      {saveError && <div className="rounded-2xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 px-4 py-3 text-sm text-red-700 dark:text-red-300">{saveError}</div>}
 
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <h3 className="text-base font-bold text-gray-900 mb-3">Balances</h3>
+      <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6 transition duration-300">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Balances</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {displayBalances.map((balance) => (
-            <div key={balance.name} className="rounded-xl border border-gray-100 shadow-sm px-3 py-2 flex items-center justify-between gap-3">
+            <div key={balance.name} className="rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm px-4 py-3 flex items-center justify-between gap-3 bg-white dark:bg-gray-700 transition">
               <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold text-gray-600" style={{ background: "#e5e7eb" }}>
+                <div className="w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold text-white" style={{ background: "linear-gradient(135deg, #662498 0%, #a855f7 100%)" }}>
                   {balance.initial}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <p className="text-xs font-semibold text-gray-800">{balance.name}</p>
+                    <p className="text-sm font-semibold text-gray-800 dark:text-white">{balance.name}</p>
                     {balance.settlementPending && (
-                      <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold rounded-full bg-amber-100 text-amber-800">
+                      <span className="inline-flex items-center px-2 py-0.5 text-[10px] font-semibold rounded-full bg-amber-100 dark:bg-amber-900/30 text-amber-800 dark:text-amber-300">
                         Pending
                       </span>
                     )}
                   </div>
-                  <p className="text-[10px] text-gray-500">{balance.positive ? "owes you" : "you owe"}</p>
+                  <p className="text-[10px] text-gray-600 dark:text-gray-400">{balance.positive ? "owes you" : "you owe"}</p>
                   {balance.settlementPending && (
-                    <p className="text-[10px] text-amber-600 mt-0.5">
+                    <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-0.5">
                       {balance.settledByCurrentUser ? "Waiting for other user" : "Needs your confirmation"}
                     </p>
                   )}
@@ -180,8 +184,7 @@ export default function GroupDetailsPage() {
                 <button
                   onClick={() => handleSettle(balance.email)}
                   disabled={settlingEmail === balance.email || balance.amount <= 0 || (balance.settlementPending && balance.settledByCurrentUser)}
-                  className="px-3 py-1 text-xs font-semibold rounded-lg cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
-                  style={{ background: "#dbeafe", color: "#1e3a8a" }}
+                  className="px-3 py-1 text-xs font-semibold rounded-lg cursor-pointer disabled:cursor-not-allowed disabled:opacity-60 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition"
                 >
                   {settlingEmail === balance.email
                     ? "Settling..."
@@ -197,21 +200,21 @@ export default function GroupDetailsPage() {
         </div>
       </section>
 
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-        <h3 className="text-base font-bold text-gray-900 mb-3">Expenses</h3>
+      <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6 transition duration-300">
+        <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Expenses</h3>
         <div className="space-y-2">
           {group.expenses.map((expense) => (
             <button
               key={expense.id}
               onClick={() => navigate(`/groups/${id}/expenses/${expense.id}`)}
-              className="w-full rounded-xl border border-gray-100 shadow-sm px-4 py-3 flex items-center justify-between gap-4 text-left hover:border-purple-200 transition cursor-pointer"
+              className="w-full rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm px-4 py-3 flex items-center justify-between gap-4 text-left hover:border-purple-200 dark:hover:border-purple-500 transition cursor-pointer bg-white dark:bg-gray-700"
             >
               <div>
-                <p className="text-sm font-semibold text-gray-800">{expense.desc}</p>
-                <p className="text-xs text-gray-400 mt-0.5">{expense.sub}</p>
+                <p className="text-sm font-semibold text-gray-800 dark:text-white">{expense.desc}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{expense.sub}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-semibold text-gray-700">{formatPeso(expense.amount)}</p>
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{formatPeso(expense.amount)}</p>
                 <p className="text-xs font-bold mt-0.5" style={{ color: expense.positive ? "#16a34a" : "#dc2626" }}>
                   {signedPeso(expense.share)}
                 </p>

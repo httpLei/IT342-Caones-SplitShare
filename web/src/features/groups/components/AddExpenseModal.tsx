@@ -1,5 +1,4 @@
 import { useEffect, useState, type FormEvent } from "react";
-
 type Props = {
   open: boolean;
   loading?: boolean;
@@ -44,44 +43,44 @@ export default function AddExpenseModal({ open, loading = false, error = "", mod
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4" onClick={onClose}>
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+      <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
         <div className="flex items-start justify-between gap-4 mb-5">
           <div>
-            <h3 className="text-xl font-bold text-gray-900">{mode === "edit" ? "Edit expense" : "Add expense"}</h3>
-            <p className="text-sm text-gray-500 mt-1">Log a shared cost for this group.</p>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">{mode === "edit" ? "Edit expense" : "Add expense"}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Log a shared cost for this group.</p>
           </div>
-          <button onClick={onClose} className="text-sm font-semibold text-gray-400 hover:text-gray-700 transition cursor-pointer">
+          <button onClick={onClose} className="text-sm font-semibold text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 transition cursor-pointer">
             Close
           </button>
         </div>
 
-        {error && <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+        {error && <div className="mb-4 rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 px-4 py-3 text-sm text-red-700 dark:text-red-300">{error}</div>}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">Description</label>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Description</label>
             <input
               required
               value={description}
               onChange={(event) => setDescription(event.target.value)}
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-purple-400"
+              className="w-full rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white px-4 py-3 text-sm outline-none focus:border-purple-400"
               placeholder="Dinner, groceries, transport..."
             />
           </div>
 
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">Category</label>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Category</label>
               <input
                 required
                 value={category}
                 onChange={(event) => setCategory(event.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-purple-400"
+                className="w-full rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white px-4 py-3 text-sm outline-none focus:border-purple-400"
                 placeholder="Food"
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">Amount</label>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Amount</label>
               <input
                 required
                 type="number"
@@ -89,21 +88,21 @@ export default function AddExpenseModal({ open, loading = false, error = "", mod
                 step="0.01"
                 value={amount}
                 onChange={(event) => setAmount(event.target.value)}
-                className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-purple-400"
+                className="w-full rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white px-4 py-3 text-sm outline-none focus:border-purple-400"
                 placeholder="120.00"
               />
             </div>
           </div>
 
           <div>
-            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500">Receipt photo</label>
+            <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Receipt photo</label>
             <input
               type="file"
               accept="image/*"
               onChange={(event) => setReceipt(event.target.files?.[0] ?? null)}
-              className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm outline-none focus:border-purple-400"
+              className="w-full rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white px-4 py-3 text-sm outline-none focus:border-purple-400"
             />
-            <p className="mt-1 text-xs text-gray-400">
+            <p className="mt-1 text-xs text-gray-400 dark:text-gray-500">
               {receipt
                 ? `Selected: ${receipt.name}`
                 : initialValues?.receiptUrl
@@ -113,7 +112,7 @@ export default function AddExpenseModal({ open, loading = false, error = "", mod
           </div>
 
           <div className="flex gap-3 pt-1">
-            <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition cursor-pointer">
+            <button type="button" onClick={onClose} className="flex-1 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition cursor-pointer">
               Cancel
             </button>
             <button

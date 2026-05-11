@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Mail, Lock, LogIn } from "lucide-react";
 import { authApi } from "../../../shared/services/api";
 import { useAuth } from "../AuthContext";
 
@@ -82,42 +83,47 @@ export default function LoginPage() {
 
             <form onSubmit={handleSubmit} className="space-y-5">
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Email</label>
-                <input
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="you@example.com"
-                  className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg outline-none transition"
-                  onFocus={(e) => (e.target.style.borderColor = "#662498")}
-                  onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
-                />
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Email</label>
+                <div className="relative">
+                  <Mail size={18} className="absolute left-3 top-3.5 text-gray-400" />
+                  <input
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg outline-none transition focus:ring-2 focus:ring-purple-200"
+                    onFocus={(e) => (e.target.style.borderColor = "#662498")}
+                    onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+                  />
+                </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Password</label>
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder=""
-                  className="w-full px-4 py-2.5 text-sm border border-gray-200 rounded-lg outline-none transition"
-                  onFocus={(e) => (e.target.style.borderColor = "#662498")}
-                  onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
-                />
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Password</label>
+                <div className="relative">
+                  <Lock size={18} className="absolute left-3 top-3.5 text-gray-400" />
+                  <input
+                    type="password"
+                    required
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg outline-none transition focus:ring-2 focus:ring-purple-200"
+                    onFocus={(e) => (e.target.style.borderColor = "#662498")}
+                    onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
+                  />
+                </div>
               </div>
 
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 text-sm font-bold text-white rounded-lg transition mt-2 cursor-pointer disabled:opacity-60"
-                style={{ background: "#662498" }}
-                onMouseEnter={(e) => !loading && ((e.target as HTMLElement).style.background = "#4a1870")}
-                onMouseLeave={(e) => ((e.target as HTMLElement).style.background = "#662498")}
+                className="w-full py-3 text-sm font-bold text-white rounded-lg transition mt-2 cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2 hover:shadow-lg transform hover:scale-105"
+                style={{ background: "linear-gradient(135deg, #662498 0%, #a855f7 100%)" }}
               >
-                {loading ? "Signing in" : "Sign In"}
+                <LogIn size={18} />
+                {loading ? "Signing in..." : "Sign In"}
               </button>
             </form>
 

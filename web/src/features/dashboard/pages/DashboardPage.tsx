@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Plus, TrendingUp, TrendingDown, DollarSign, Users } from "lucide-react";
 import { useAuth } from "../../auth/AuthContext";
+import { useTheme } from "../../settings/ThemeContext";
 import { groupApi } from "../../groups/services/groupService";
 import type { GroupSummaryDto } from "../../groups/types/groups";
 import { formatPeso, signedPeso } from "../../../shared/utils/format";
@@ -8,6 +10,7 @@ import { formatPeso, signedPeso } from "../../../shared/utils/format";
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isDark } = useTheme();
   const [groups, setGroups] = useState<GroupSummaryDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -47,41 +50,58 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Hello, {user?.firstname}!</h1>
-          <p className="text-sm text-gray-400 mt-1">Here&apos;s your shared expense summary</p>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Hello, {user?.firstname}! 👋</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Here&apos;s your shared expense summary</p>
         </div>
         <button
           onClick={() => navigate("/groups")}
-          className="flex items-center gap-2 px-5 py-2.5 text-sm font-bold text-white rounded-xl transition cursor-pointer"
-          style={{ background: "#662498" }}
+          className="flex items-center gap-2 px-6 py-3 text-sm font-bold text-white rounded-xl transition duration-200 hover:shadow-lg transform hover:scale-105"
+          style={{ background: "linear-gradient(135deg, #662498 0%, #a855f7 100%)" }}
         >
-          + Add Expense
+          <Plus size={20} />
+          Add Expense
         </button>
       </div>
 
-      {error && <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</div>}
+      {error && <div className="rounded-2xl border border-red-200 bg-red-50 dark:bg-red-900/30 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-300">{error}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
         {[
-          { label: "Net Balance", value: signedPeso(metrics.net), sub: "Across all groups", color: "#662498", bg: "#f5f0ff" },
-          { label: "You are owed", value: signedPeso(metrics.owed), sub: "Positive balances", color: "#16a34a", bg: "#f0fdf4" },
-          { label: "You owe", value: signedPeso(-metrics.owe), sub: "Negative balances", color: "#dc2626", bg: "#fef2f2" }
-        ].map((card) => (
-          <div key={card.label} className="rounded-2xl p-5 border border-gray-100 shadow-sm" style={{ background: card.bg }}>
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-3">{card.label}</p>
-            <p className="text-2xl font-bold" style={{ color: card.color }}>{card.value}</p>
-            <p className="text-xs text-gray-400 mt-1">{card.sub}</p>
-          </div>
-        ))}
+          { label: "Net Balance", value: signedPeso(metrics.net), sub: "Across all groups", color: "#662498", bg: "#f5f0ff", darkBg: "#3d2463", icon: DollarSign },
+          { label: "You are owed", value: signedPeso(metrics.owed), sub: "Positive balances", color: "#16a34a", bg: "#f0fdf4", darkBg: "#1f3a1f", icon: TrendingUp },
+          { label: "You owe", value: signedPeso(-metrics.owe), sub: "Negative balances", color: "#dc2626", bg: "#fef2f2", darkBg: "#3a1f1f", icon: TrendingDown }
+        ].map((card) => {
+          const Icon = card.icon;
+          return (
+            <div key={card.label} className="rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition duration-200" style={{ background: isDark ? card.darkBg : card.bg }}>
+              <div className="flex items-start justify-between mb-4">
+                <p className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{card.label}</p>
+                <div className="p-2 rounded-lg" style={{ background: card.color + (isDark ? "33" : "20") }}>
+                  <Icon size={20} style={{ color: card.color }} />
+                </div>
+              </div>
+              <p className="text-3xl font-bold" style={{ color: card.color }}>{card.value}</p>
+              <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{card.sub}</p>
+            </div>
+          );
+        })}
       </div>
 
       <div>
-        <h2 className="text-base font-bold text-gray-800 mb-4">Your Groups</h2>
+        <div className="flex items-center justify-between mb-5">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white">Your Groups</h2>
+          {groups.length > 2 && <p className="text-xs text-gray-500 dark:text-gray-400">{groups.length} groups total</p>}
+        </div>
         {loading ? (
-          <div className="rounded-2xl border border-gray-100 bg-white p-6 text-sm text-gray-500">Loading groups...</div>
+          <div className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-8 text-center">
+            <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-3">Loading groups...</p>
+          </div>
         ) : groups.length === 0 ? (
-          <div className="rounded-2xl border border-dashed border-gray-300 bg-white p-8 text-center text-sm text-gray-500">
-            No groups yet. Create one in the Groups page to start logging shared expenses.
+          <div className="rounded-2xl border-2 border-dashed border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 p-12 text-center">
+            <div className="text-gray-400 mb-3 flex justify-center">📦</div>
+            <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">No groups yet</p>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Create one in the Groups page to start logging shared expenses</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -89,17 +109,25 @@ export default function DashboardPage() {
               <button
                 key={group.id}
                 onClick={() => navigate(`/groups/${group.id}`)}
-                className="rounded-2xl p-5 border border-gray-100 shadow-sm bg-white text-left hover:border-purple-200 transition cursor-pointer"
+                className="rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm bg-white dark:bg-gray-800 text-left hover:border-purple-300 dark:hover:border-purple-500 hover:shadow-md transition duration-200 transform hover:translate-y-[-2px]"
               >
-                <p className="font-bold text-gray-900">{group.name}</p>
-                <p className="text-xs text-gray-600 mt-0.5">{group.members.length} members</p>
-                <div className="flex items-end justify-between mt-6">
-                  <p className="text-xs text-gray-600">{formatPeso(group.total)} total</p>
-                  <p className="text-sm font-bold" style={{ color: group.balance >= 0 ? "#16a34a" : "#dc2626" }}>
-                    {signedPeso(group.balance)}
-                    <br />
-                    <span className="text-xs font-normal text-gray-600">{group.balance >= 0 ? "you are owed" : "you owe"}</span>
-                  </p>
+                <div className="flex items-start justify-between mb-3">
+                  <p className="font-bold text-gray-900 dark:text-white text-lg">{group.name}</p>
+                  <div className="bg-purple-100 dark:bg-purple-900/30 rounded-lg p-2">
+                    <Users size={18} style={{ color: "#662498" }} />
+                  </div>
+                </div>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{group.members.length} member{group.members.length !== 1 ? 's' : ''}</p>
+                <div className="flex items-end justify-between mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{formatPeso(group.total)} total</p>
+                  <div className="text-right">
+                    <p className="text-sm font-bold" style={{ color: group.balance >= 0 ? "#16a34a" : "#dc2626" }}>
+                      {signedPeso(group.balance)}
+                    </p>
+                    <p className="text-xs font-medium" style={{ color: group.balance >= 0 ? "#16a34a" : "#dc2626" }}>
+                      {group.balance >= 0 ? "owed to you" : "you owe"}
+                    </p>
+                  </div>
                 </div>
               </button>
             ))}

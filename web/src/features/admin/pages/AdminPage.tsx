@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { adminApi } from '../../../shared/services/api';
 import { useAuth } from '../../auth/AuthContext';
+import { useTheme } from '../../settings/ThemeContext';
 import type { AdminAuditLogDto, AdminUserDto } from '../../auth/types/auth';
 
 function formatDate(value: string) {
@@ -15,6 +16,7 @@ function formatDate(value: string) {
 export default function AdminPage() {
   const navigate = useNavigate();
   const { logout } = useAuth();
+  const { isDark } = useTheme();
   const [users, setUsers] = useState<AdminUserDto[]>([]);
   const [logs, setLogs] = useState<AdminAuditLogDto[]>([]);
   const [loadingUsers, setLoadingUsers] = useState(true);
@@ -101,15 +103,15 @@ export default function AdminPage() {
   };
 
   return (
-    <div className="min-h-screen px-6 py-8 md:px-10" style={{ background: '#f4f1fb' }}>
+    <div className="min-h-screen px-6 py-8 md:px-10 bg-gray-50 dark:bg-gray-900 transition duration-300" style={isDark ? {} : { background: '#f4f1fb' }}>
       <div className="max-w-6xl mx-auto space-y-6">
         <div className="flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-bold tracking-widest uppercase" style={{ color: '#8f7bb5' }}>
               Admin Console
             </p>
-            <h1 className="text-3xl font-bold text-gray-900 mt-1">User Management</h1>
-            <p className="text-sm text-gray-500 mt-2">
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white mt-1">User Management</h1>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
               Suspend or reactivate accounts and inspect recent admin actions.
             </p>
           </div>
@@ -123,39 +125,39 @@ export default function AdminPage() {
         </div>
 
         {error && (
-          <div className="text-sm rounded-lg px-4 py-3" style={{ background: '#fff1f2', color: '#b42318' }}>
+          <div className="text-sm rounded-lg px-4 py-3 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800" style={{ color: '#b42318' }}>
             {error}
           </div>
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="rounded-2xl p-5 border border-gray-100 bg-white shadow-sm">
-            <p className="text-xs uppercase tracking-wide text-gray-500">Total users</p>
-            <p className="text-2xl font-bold text-gray-900 mt-2">{users.length}</p>
+          <div className="rounded-2xl p-5 border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Total users</p>
+            <p className="text-2xl font-bold text-gray-900 dark:text-white mt-2">{users.length}</p>
           </div>
-          <div className="rounded-2xl p-5 border border-gray-100 bg-white shadow-sm">
-            <p className="text-xs uppercase tracking-wide text-gray-500">Active</p>
+          <div className="rounded-2xl p-5 border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Active</p>
             <p className="text-2xl font-bold mt-2" style={{ color: '#15803d' }}>{activeUsers}</p>
           </div>
-          <div className="rounded-2xl p-5 border border-gray-100 bg-white shadow-sm">
-            <p className="text-xs uppercase tracking-wide text-gray-500">Suspended</p>
+          <div className="rounded-2xl p-5 border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+            <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Suspended</p>
             <p className="text-2xl font-bold mt-2" style={{ color: '#b42318' }}>{suspendedUsers}</p>
           </div>
         </div>
 
-        <section className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="text-base font-bold text-gray-900">Users</h2>
+        <section className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+            <h2 className="text-base font-bold text-gray-900 dark:text-white">Users</h2>
             <button
               onClick={fetchUsers}
-              className="text-sm font-semibold px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
+              className="text-sm font-semibold px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 hover:bg-gray-50 cursor-pointer"
             >
               Refresh
             </button>
           </div>
 
           {loadingUsers ? (
-            <p className="px-5 py-8 text-sm text-gray-500">Loading users...</p>
+            <p className="px-5 py-8 text-sm text-gray-500 dark:text-gray-400">Loading users...</p>
           ) : users.length === 0 ? (
             <p className="px-5 py-8 text-sm text-gray-500">No users found.</p>
           ) : (
@@ -172,12 +174,12 @@ export default function AdminPage() {
                 </thead>
                 <tbody>
                   {users.map((u) => (
-                    <tr key={u.id} className="border-t border-gray-100 text-sm">
+                    <tr key={u.id} className="border-t border-gray-100 dark:border-gray-700 text-sm">
                       <td className="px-5 py-3">
-                        <p className="font-semibold text-gray-900">{u.firstname} {u.lastname}</p>
-                        <p className="text-xs text-gray-500">{u.email}</p>
+                        <p className="font-semibold text-gray-900 dark:text-white">{u.firstname} {u.lastname}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{u.email}</p>
                       </td>
-                      <td className="px-5 py-3 text-gray-700">{u.role}</td>
+                      <td className="px-5 py-3 text-gray-700 dark:text-gray-300">{u.role}</td>
                       <td className="px-5 py-3">
                         <span
                           className="text-xs font-bold px-2 py-1 rounded-full"
@@ -189,7 +191,7 @@ export default function AdminPage() {
                           {u.enabled ? 'ACTIVE' : 'SUSPENDED'}
                         </span>
                       </td>
-                      <td className="px-5 py-3 text-gray-600">{formatDate(u.createdAt)}</td>
+                      <td className="px-5 py-3 text-gray-600 dark:text-gray-400">{formatDate(u.createdAt)}</td>
                       <td className="px-5 py-3">
                         <button
                           onClick={() => onToggleUser(u)}
@@ -212,19 +214,19 @@ export default function AdminPage() {
           )}
         </section>
 
-        <section className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
-          <div className="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="text-base font-bold text-gray-900">Recent Admin Audit Logs</h2>
+        <section className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm overflow-hidden">
+          <div className="px-5 py-4 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+            <h2 className="text-base font-bold text-gray-900 dark:text-white">Recent Admin Audit Logs</h2>
             <button
               onClick={fetchLogs}
-              className="text-sm font-semibold px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 cursor-pointer"
+              className="text-sm font-semibold px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 hover:bg-gray-50 cursor-pointer"
             >
               Refresh
             </button>
           </div>
 
           {loadingLogs ? (
-            <p className="px-5 py-8 text-sm text-gray-500">Loading logs...</p>
+            <p className="px-5 py-8 text-sm text-gray-500 dark:text-gray-400">Loading logs...</p>
           ) : logs.length === 0 ? (
             <p className="px-5 py-8 text-sm text-gray-500">No admin actions recorded yet.</p>
           ) : (
@@ -250,24 +252,24 @@ export default function AdminPage() {
           <div className="fixed inset-0 z-50 flex items-center justify-center"
                style={{ background: "rgba(0,0,0,0.5)" }}
                onClick={() => setShowLogoutModal(false)}>
-            <div className="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm mx-4"
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 w-full max-w-sm mx-4 transition duration-300"
                  onClick={e => e.stopPropagation()}>
               <div className="flex items-center justify-center w-14 h-14 rounded-full mx-auto mb-5"
-                   style={{ background: "#f5f0ff" }}>
+                   style={{ background: isDark ? "#4c1d95" : "#f5f0ff" }}>
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
                   <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" stroke="#662498" strokeWidth="2" strokeLinecap="round"/>
                   <polyline points="16 17 21 12 16 7" stroke="#662498" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   <line x1="21" y1="12" x2="9" y2="12" stroke="#662498" strokeWidth="2" strokeLinecap="round"/>
                 </svg>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 text-center">Sign out?</h3>
-              <p className="text-sm text-gray-400 text-center mt-1 mb-7">
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white text-center">Sign out?</h3>
+              <p className="text-sm text-gray-400 dark:text-gray-500 text-center mt-1 mb-7">
                 Are you sure you want to sign out of SplitShare?
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowLogoutModal(false)}
-                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 text-gray-600 hover:bg-gray-50 transition cursor-pointer"
+                  className="flex-1 py-2.5 rounded-xl text-sm font-semibold border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-700 text-gray-600 hover:bg-gray-50 transition cursor-pointer"
                 >
                   Cancel
                 </button>

@@ -42,11 +42,11 @@ export default function ActivityDetailsPage() {
   }
 
   if (loading) {
-    return <div className="rounded-2xl border border-gray-100 bg-white p-6 text-sm text-gray-500">Loading activity details...</div>;
+    return <div className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 text-sm text-gray-500 dark:text-gray-400">Loading activity details...</div>;
   }
 
   if (error) {
-    return <div className="rounded-2xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">{error}</div>;
+    return <div className="rounded-2xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 p-6 text-sm text-red-700 dark:text-red-300">{error}</div>;
   }
 
   if (!expense) {
@@ -98,8 +98,8 @@ export default function ActivityDetailsPage() {
     <div className="space-y-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Activity Details</h1>
-          <p className="text-sm text-gray-400 mt-1">View complete transaction information</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Activity Details</h1>
+          <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">View complete transaction information</p>
         </div>
         <Link
           to={Number.isFinite(gid) ? `/groups/${gid}` : "/activity"}
@@ -109,39 +109,39 @@ export default function ActivityDetailsPage() {
         </Link>
       </div>
 
-      {success && <div className="rounded-2xl border border-green-200 bg-green-50 p-4 text-sm text-green-700">{success}</div>}
-      {saveError && <div className="rounded-2xl border border-red-200 bg-red-50 p-4 text-sm text-red-700">{saveError}</div>}
+      {success && <div className="rounded-2xl border border-green-200 dark:border-green-800 bg-green-50 dark:bg-green-900/30 p-4 text-sm text-green-700 dark:text-green-300">{success}</div>}
+      {saveError && <div className="rounded-2xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 p-4 text-sm text-red-700 dark:text-red-300">{saveError}</div>}
 
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-5">
+      <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6 space-y-5 transition duration-300">
         <div>
-          <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Description</p>
-          <p className="text-lg font-bold text-gray-900 mt-1">{detail.desc}</p>
+          <p className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">Description</p>
+          <p className="text-lg font-bold text-gray-900 dark:text-white mt-1">{detail.desc}</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Group and Date</p>
-            <p className="text-sm font-medium text-gray-800 mt-1">{detail.sub}</p>
+            <p className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">Group and Date</p>
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-300 mt-1">{detail.sub}</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Total Amount</p>
-            <p className="text-sm font-medium text-gray-800 mt-1">{formatPeso(detail.amount)}</p>
+            <p className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">Total Amount</p>
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-300 mt-1">{formatPeso(detail.amount)}</p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Your Share</p>
+            <p className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">Your Share</p>
             <p className="text-sm font-bold mt-1" style={{ color: isCredit ? "#16a34a" : "#dc2626" }}>
               {signedPeso(detail.share)}
             </p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Status</p>
+            <p className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">Status</p>
             <p className="text-sm font-medium mt-1" style={{ color: isCredit ? "#16a34a" : "#dc2626" }}>
               {isCredit ? "Credit" : "Debit"}
             </p>
           </div>
           <div>
-            <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Category</p>
-            <p className="text-sm font-medium text-gray-800 mt-1">{detail.category || "N/A"}</p>
+            <p className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">Category</p>
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-300 mt-1">{detail.category || "N/A"}</p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-wider text-gray-500 font-semibold">Receipt</p>
@@ -205,7 +205,7 @@ export default function ActivityDetailsPage() {
           }}
         >
           <div
-            className="relative w-full max-w-3xl rounded-2xl bg-white p-3 shadow-2xl"
+            className="relative w-full max-w-3xl rounded-2xl bg-white dark:bg-gray-800 p-3 shadow-2xl transition duration-300"
             onClick={(event) => event.stopPropagation()}
           >
             <button
@@ -214,7 +214,7 @@ export default function ActivityDetailsPage() {
                 setShowReceiptPreview(false);
                 setReceiptLoading(false);
               }}
-              className="absolute right-3 top-3 rounded-lg border border-gray-200 bg-white px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50"
+              className="absolute right-3 top-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 px-3 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
             >
               Close
             </button>

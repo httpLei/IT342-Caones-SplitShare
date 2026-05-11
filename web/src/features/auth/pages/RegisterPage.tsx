@@ -1,6 +1,7 @@
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
+import { Mail, Lock, User, UserPlus } from "lucide-react";
 import { authApi } from "../../../shared/services/api";
 import { useAuth } from "../AuthContext";
 
@@ -62,9 +63,6 @@ export default function RegisterPage() {
     }
   };
 
-  const inputClass = (key: string) =>
-    `w-full px-4 py-2.5 text-sm border rounded-lg outline-none transition ${fieldErrors[key] ? "border-red-400 bg-red-50" : "border-gray-200"}`;
-
   return (
     <div className="min-h-screen flex flex-col" style={{ background: "linear-gradient(135deg, #3b0764 0%, #662498 60%, #a855f7 100%)" }}>
       <nav className="flex items-center gap-8 px-10 py-5">
@@ -102,36 +100,51 @@ export default function RegisterPage() {
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">First Name</label>
-                  <input type="text" required value={form.firstname} onChange={set("firstname")} placeholder="John" className={inputClass("firstname")} onFocus={(e) => (e.target.style.borderColor = "#662498")} onBlur={(e) => (e.target.style.borderColor = fieldErrors.firstname ? "#f87171" : "#e5e7eb")} />
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">First Name</label>
+                  <div className="relative">
+                    <User size={18} className="absolute left-3 top-3.5 text-gray-400" />
+                    <input type="text" required value={form.firstname} onChange={set("firstname")} placeholder="John" className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-lg outline-none transition focus:ring-2 focus:ring-purple-200 ${fieldErrors.firstname ? "border-red-400 bg-red-50" : "border-gray-200"}`} onFocus={(e) => (e.target.style.borderColor = "#662498")} onBlur={(e) => (e.target.style.borderColor = fieldErrors.firstname ? "#f87171" : "#e5e7eb")} />
+                  </div>
                   {fieldErrors.firstname && <p className="mt-1 text-xs text-red-500">{fieldErrors.firstname}</p>}
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Last Name</label>
-                  <input type="text" required value={form.lastname} onChange={set("lastname")} placeholder="Doe" className={inputClass("lastname")} onFocus={(e) => (e.target.style.borderColor = "#662498")} onBlur={(e) => (e.target.style.borderColor = fieldErrors.lastname ? "#f87171" : "#e5e7eb")} />
+                  <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Last Name</label>
+                  <div className="relative">
+                    <User size={18} className="absolute left-3 top-3.5 text-gray-400" />
+                    <input type="text" required value={form.lastname} onChange={set("lastname")} placeholder="Doe" className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-lg outline-none transition focus:ring-2 focus:ring-purple-200 ${fieldErrors.lastname ? "border-red-400 bg-red-50" : "border-gray-200"}`} onFocus={(e) => (e.target.style.borderColor = "#662498")} onBlur={(e) => (e.target.style.borderColor = fieldErrors.lastname ? "#f87171" : "#e5e7eb")} />
+                  </div>
                   {fieldErrors.lastname && <p className="mt-1 text-xs text-red-500">{fieldErrors.lastname}</p>}
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Email</label>
-                <input type="email" required value={form.email} onChange={set("email")} placeholder="you@example.com" className={inputClass("email")} onFocus={(e) => (e.target.style.borderColor = "#662498")} onBlur={(e) => (e.target.style.borderColor = fieldErrors.email ? "#f87171" : "#e5e7eb")} />
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Email</label>
+                <div className="relative">
+                  <Mail size={18} className="absolute left-3 top-3.5 text-gray-400" />
+                  <input type="email" required value={form.email} onChange={set("email")} placeholder="you@example.com" className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-lg outline-none transition focus:ring-2 focus:ring-purple-200 ${fieldErrors.email ? "border-red-400 bg-red-50" : "border-gray-200"}`} onFocus={(e) => (e.target.style.borderColor = "#662498")} onBlur={(e) => (e.target.style.borderColor = fieldErrors.email ? "#f87171" : "#e5e7eb")} />
+                </div>
                 {fieldErrors.email && <p className="mt-1 text-xs text-red-500">{fieldErrors.email}</p>}
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Password</label>
-                <input type="password" required value={form.password} onChange={set("password")} placeholder="8+ characters" className={inputClass("password")} onFocus={(e) => (e.target.style.borderColor = "#662498")} onBlur={(e) => (e.target.style.borderColor = fieldErrors.password ? "#f87171" : "#e5e7eb")} />
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Password</label>
+                <div className="relative">
+                  <Lock size={18} className="absolute left-3 top-3.5 text-gray-400" />
+                  <input type="password" required value={form.password} onChange={set("password")} placeholder="8+ characters" className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-lg outline-none transition focus:ring-2 focus:ring-purple-200 ${fieldErrors.password ? "border-red-400 bg-red-50" : "border-gray-200"}`} onFocus={(e) => (e.target.style.borderColor = "#662498")} onBlur={(e) => (e.target.style.borderColor = fieldErrors.password ? "#f87171" : "#e5e7eb")} />
+                </div>
                 {fieldErrors.password && <p className="mt-1 text-xs text-red-500">{fieldErrors.password}</p>}
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1.5">Confirm Password</label>
-                <input type="password" required value={form.confirm} onChange={set("confirm")} placeholder="Re-enter password" className={inputClass("confirm")} onFocus={(e) => (e.target.style.borderColor = "#662498")} onBlur={(e) => (e.target.style.borderColor = fieldErrors.confirm ? "#f87171" : "#e5e7eb")} />
+                <label className="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Confirm Password</label>
+                <div className="relative">
+                  <Lock size={18} className="absolute left-3 top-3.5 text-gray-400" />
+                  <input type="password" required value={form.confirm} onChange={set("confirm")} placeholder="Re-enter password" className={`w-full pl-10 pr-4 py-2.5 text-sm border rounded-lg outline-none transition focus:ring-2 focus:ring-purple-200 ${fieldErrors.confirm ? "border-red-400 bg-red-50" : "border-gray-200"}`} onFocus={(e) => (e.target.style.borderColor = "#662498")} onBlur={(e) => (e.target.style.borderColor = fieldErrors.confirm ? "#f87171" : "#e5e7eb")} />
+                </div>
                 {fieldErrors.confirm && <p className="mt-1 text-xs text-red-500">{fieldErrors.confirm}</p>}
               </div>
 
-              <button type="submit" disabled={loading} className="w-full py-3 text-sm font-bold text-white rounded-lg transition mt-1 cursor-pointer disabled:opacity-60" style={{ background: "#662498" }} onMouseEnter={(e) => !loading && ((e.target as HTMLElement).style.background = "#4a1870")} onMouseLeave={(e) => ((e.target as HTMLElement).style.background = "#662498")}>{loading ? "Creating account" : "Sign Up"}</button>
+              <button type="submit" disabled={loading} className="w-full py-3 text-sm font-bold text-white rounded-lg transition mt-1 cursor-pointer disabled:opacity-60 flex items-center justify-center gap-2 hover:shadow-lg transform hover:scale-105" style={{ background: "linear-gradient(135deg, #662498 0%, #a855f7 100%)" }}><UserPlus size={18} />{loading ? "Creating account..." : "Sign Up"}</button>
             </form>
 
             <p className="mt-6 text-center text-sm text-gray-400">

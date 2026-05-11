@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { Lock } from "lucide-react";
 import { useAuth } from "../../auth/AuthContext";
 import { userApi } from "../services/userService";
 import type { UserConnectionDto, UserProfileStatsDto } from "../types/social";
@@ -29,14 +30,11 @@ export default function ProfilePage() {
     setSettingsEmail(user?.email ?? "");
   }, [user]);
 
-  const loadProfileStats = async () => {
-    try {
-      const response = await userApi.getProfileStats();
-      setStats(response.data.data);
-    } catch (error) {
-      console.error("Failed to fetch profile stats", error);
-    }
-  };
+  useEffect(() => {
+    userApi.getProfileStats()
+      .then((response) => setStats(response.data.data))
+      .catch((error) => console.error("Failed to fetch profile stats", error));
+  }, []);
 
   const loadFollowers = async () => {
     const response = await userApi.getFollowers();
@@ -47,10 +45,6 @@ export default function ProfilePage() {
     const response = await userApi.getFollowing();
     setFollowing(response.data.data ?? []);
   };
-
-  useEffect(() => {
-    loadProfileStats();
-  }, []);
 
   const saveProfileSettings = async () => {
     try {
@@ -87,27 +81,23 @@ export default function ProfilePage() {
     setConfirmPassword("");
   };
 
-  const openFollowers = async () => {
+  const openConnections = async (mode: "followers" | "following") => {
     setConnectionsLoading(true);
     setConnectionsError("");
-    setShowFollowersModal(true);
-    try {
-      await loadFollowers();
-    } catch {
-      setConnectionsError("Unable to load followers.");
-    } finally {
-      setConnectionsLoading(false);
+    if (mode === "followers") {
+      setShowFollowersModal(true);
+    } else {
+      setShowFollowingModal(true);
     }
-  };
 
-  const openFollowing = async () => {
-    setConnectionsLoading(true);
-    setConnectionsError("");
-    setShowFollowingModal(true);
     try {
-      await loadFollowing();
+      if (mode === "followers") {
+        await loadFollowers();
+      } else {
+        await loadFollowing();
+      }
     } catch {
-      setConnectionsError("Unable to load following users.");
+      setConnectionsError(mode === "followers" ? "Unable to load followers." : "Unable to load following users.");
     } finally {
       setConnectionsLoading(false);
     }
@@ -135,7 +125,11 @@ export default function ProfilePage() {
         await userApi.follow(person.id);
       }
 
-      await Promise.all([loadProfileStats(), loadFollowers(), loadFollowing()]);
+      await Promise.all([
+        userApi.getProfileStats().then((response) => setStats(response.data.data)),
+        loadFollowers(),
+        loadFollowing(),
+      ]);
     } catch {
       setConnectionsError("Unable to update follow status.");
     } finally {
@@ -143,118 +137,111 @@ export default function ProfilePage() {
     }
   };
 
+  const activeConnections = showFollowersModal ? followers : following;
+  const modalTitle = showFollowersModal ? "Followers" : "Following";
+
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold text-gray-900">Profile</h1>
-        <p className="text-sm text-gray-400 mt-1">Manage your account details and password</p>
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Profile</h1>
+        <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">Manage your account details and password</p>
       </div>
 
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+      <section className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition duration-300">
         <div className="flex flex-col items-center text-center">
-          <div className="w-16 h-16 rounded-full flex items-center justify-center text-lg font-bold" style={{ background: "#c9beff", color: "#4a1870" }}>
+          <div className="flex h-16 w-16 items-center justify-center rounded-full text-lg font-bold text-white" style={{ background: "linear-gradient(135deg, #662498 0%, #a855f7 100%)" }}>
             {(user?.firstname?.[0] ?? "U").toUpperCase()}{(user?.lastname?.[0] ?? "").toUpperCase()}
           </div>
-          <h2 className="mt-3 text-lg font-bold text-gray-900">{user?.firstname} {user?.lastname}</h2>
-          <p className="text-xs text-gray-500">{user?.email}</p>
+          <h2 className="mt-3 text-lg font-bold text-gray-900 dark:text-white">{user?.firstname} {user?.lastname}</h2>
+          <p className="text-xs text-gray-500 dark:text-gray-400">{user?.email}</p>
+
           <div className="mt-5 grid grid-cols-3 gap-6">
-            <button
-              type="button"
-              onClick={() => navigate("/groups")}
-              className="rounded-xl p-2 transition hover:bg-gray-50"
-            >
-              <p className="text-lg font-bold text-gray-900">{stats?.groupsCount ?? 0}</p>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Groups</p>
+            <button type="button" onClick={() => navigate("/groups")} className="rounded-xl p-2 transition hover:bg-gray-50 dark:hover:bg-gray-700">
+              <p className="text-lg font-bold text-gray-900 dark:text-white">{stats?.groupsCount ?? 0}</p>
+              <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Groups</p>
             </button>
-            <button
-              type="button"
-              onClick={openFollowers}
-              className="rounded-xl p-2 transition hover:bg-gray-50"
-            >
-              <p className="text-lg font-bold text-gray-900">{stats?.followersCount ?? 0}</p>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Followers</p>
+            <button type="button" onClick={() => openConnections("followers")} className="rounded-xl p-2 transition hover:bg-gray-50 dark:hover:bg-gray-700">
+              <p className="text-lg font-bold text-gray-900 dark:text-white">{stats?.followersCount ?? 0}</p>
+              <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Followers</p>
             </button>
-            <button
-              type="button"
-              onClick={openFollowing}
-              className="rounded-xl p-2 transition hover:bg-gray-50"
-            >
-              <p className="text-lg font-bold text-gray-900">{stats?.followingCount ?? 0}</p>
-              <p className="text-xs text-gray-500 uppercase tracking-wide">Following</p>
+            <button type="button" onClick={() => openConnections("following")} className="rounded-xl p-2 transition hover:bg-gray-50 dark:hover:bg-gray-700">
+              <p className="text-lg font-bold text-gray-900 dark:text-white">{stats?.followingCount ?? 0}</p>
+              <p className="text-xs uppercase tracking-wide text-gray-500 dark:text-gray-400">Following</p>
             </button>
           </div>
         </div>
       </section>
 
-      <section className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
-        <h2 className="text-base font-bold text-gray-800 mb-4">Account Settings</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <section className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-sm transition duration-300">
+        <h2 className="mb-4 text-lg font-bold text-gray-800 dark:text-white">Account Settings</h2>
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label className="block text-xs font-semibold tracking-wide uppercase text-gray-500 mb-2">First name</label>
-            <input value={settingsFirstName} onChange={(e) => setSettingsFirstName(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-200" />
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">First name</label>
+            <input value={settingsFirstName} onChange={(e) => setSettingsFirstName(e.target.value)} className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-gray-900 dark:text-white transition focus:outline-none focus:ring-2 focus:ring-purple-500" />
           </div>
           <div>
-            <label className="block text-xs font-semibold tracking-wide uppercase text-gray-500 mb-2">Last name</label>
-            <input value={settingsLastName} onChange={(e) => setSettingsLastName(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-200" />
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Last name</label>
+            <input value={settingsLastName} onChange={(e) => setSettingsLastName(e.target.value)} className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-gray-900 dark:text-white transition focus:outline-none focus:ring-2 focus:ring-purple-500" />
           </div>
           <div className="md:col-span-2">
-            <label className="block text-xs font-semibold tracking-wide uppercase text-gray-500 mb-2">Email</label>
-            <input value={settingsEmail} onChange={(e) => setSettingsEmail(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-200" />
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Email</label>
+            <input value={settingsEmail} onChange={(e) => setSettingsEmail(e.target.value)} className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-gray-900 dark:text-white transition focus:outline-none focus:ring-2 focus:ring-purple-500" />
           </div>
           <div>
-            <label className="block text-xs font-semibold tracking-wide uppercase text-gray-500 mb-2">New password</label>
-            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-200" />
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">New password</label>
+            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-gray-900 dark:text-white transition focus:outline-none focus:ring-2 focus:ring-purple-500" />
           </div>
           <div>
-            <label className="block text-xs font-semibold tracking-wide uppercase text-gray-500 mb-2">Confirm password</label>
-            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full px-3 py-2.5 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-200" />
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Confirm password</label>
+            <input type="password" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-gray-900 dark:text-white transition focus:outline-none focus:ring-2 focus:ring-purple-500" />
           </div>
         </div>
-        {settingsNotice && <p className="text-sm text-green-600 mt-4">{settingsNotice}</p>}
-        {passwordNotice && <p className="text-sm text-gray-600 mt-2">{passwordNotice}</p>}
+        {settingsNotice && <p className="mt-4 text-sm text-green-600 dark:text-green-400">{settingsNotice}</p>}
+        {passwordNotice && <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">{passwordNotice}</p>}
         <div className="mt-5 flex gap-3">
-          <button onClick={saveProfileSettings} className="px-5 py-2.5 text-sm font-bold text-white rounded-xl transition cursor-pointer" style={{ background: "#662498" }}>Save changes</button>
-          <button onClick={updatePassword} className="px-5 py-2.5 text-sm font-bold text-white rounded-xl transition cursor-pointer" style={{ background: "#662498" }}>Update password</button>
+          <button onClick={saveProfileSettings} className="rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:shadow-lg" style={{ background: "linear-gradient(135deg, #662498 0%, #a855f7 100%)" }}>
+            Save changes
+          </button>
+          <button onClick={updatePassword} className="flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:shadow-lg" style={{ background: "linear-gradient(135deg, #662498 0%, #a855f7 100%)" }}>
+            <Lock size={16} />
+            Update password
+          </button>
         </div>
       </section>
 
       {(showFollowersModal || showFollowingModal) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={closeConnectionsModals}>
-          <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-2xl transition duration-300" onClick={(event) => event.stopPropagation()}>
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-gray-900">{showFollowersModal ? "Followers" : "Following"}</h3>
-              <button
-                type="button"
-                onClick={closeConnectionsModals}
-                className="rounded-lg border border-gray-200 px-3 py-1 text-xs font-semibold text-gray-700 hover:bg-gray-50"
-              >
+              <h3 className="text-lg font-bold text-gray-900 dark:text-white">{modalTitle}</h3>
+              <button type="button" onClick={closeConnectionsModals} className="rounded-lg border border-gray-200 dark:border-gray-600 px-3 py-1 text-xs font-semibold text-gray-700 dark:text-gray-300 transition hover:bg-gray-50 dark:hover:bg-gray-700">
                 Close
               </button>
             </div>
 
             {connectionsLoading ? (
               <div className="flex items-center justify-center py-10">
-                <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-200 border-t-purple-700" />
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-purple-500/20 border-t-purple-600" />
               </div>
             ) : connectionsError ? (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{connectionsError}</div>
+              <div className="rounded-xl border border-red-200 dark:border-red-800 bg-red-50 dark:bg-red-900/30 px-4 py-3 text-sm text-red-700 dark:text-red-300">{connectionsError}</div>
             ) : (
               <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
-                {(showFollowersModal ? followers : following).length === 0 ? (
-                  <p className="py-6 text-center text-sm text-gray-500">No users found.</p>
+                {activeConnections.length === 0 ? (
+                  <p className="py-6 text-center text-sm text-gray-500 dark:text-gray-400">No users found.</p>
                 ) : (
-                  (showFollowersModal ? followers : following).map((person) => (
-                    <div key={person.id} className="rounded-xl border border-gray-100 px-4 py-3">
+                  activeConnections.map((person) => (
+                    <div key={person.id} className="rounded-xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-700 px-4 py-3 transition">
                       <div className="flex items-center justify-between gap-3">
                         <div>
-                          <p className="text-sm font-semibold text-gray-900">{person.firstname} {person.lastname}</p>
-                          <p className="text-xs text-gray-500">{person.email}</p>
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">{person.firstname} {person.lastname}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">{person.email}</p>
                         </div>
                         <button
                           type="button"
                           onClick={() => toggleConnectionFollow(person)}
                           disabled={connectionActionUserId === person.id}
-                          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${person.following ? "border border-red-200 text-red-700 hover:bg-red-50" : "border border-purple-200 text-purple-700 hover:bg-purple-50"}`}
+                          className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition ${person.following ? "border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30" : "border border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/30"}`}
                         >
                           {connectionActionUserId === person.id ? "Please wait..." : getConnectionActionLabel(person)}
                         </button>
