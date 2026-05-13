@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { adminApi } from '../../../shared/services/api';
 import { useAuth } from '../../auth/AuthContext';
-import { useTheme } from '../../settings/ThemeContext';
+import { useTheme } from '../../settings/contexts/ThemeContext';
 import type { AdminAuditLogDto, AdminUserDto } from '../../auth/types/auth';
 
 function formatDate(value: string) {

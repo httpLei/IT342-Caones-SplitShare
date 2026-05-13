@@ -2,17 +2,19 @@ import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { ArrowLeft, Edit, Plus } from "lucide-react";
 import { useAuth } from "../../auth/AuthContext";
+import { useCurrency } from "../../settings/contexts/CurrencyContext";
 import AddExpenseModal from "../components/AddExpenseModal";
 import EditGroupModal from "../components/EditGroupModal";
 import { groupApi } from "../services/groupService";
 import { userApi } from "../../profile/services/userService";
 import type { GroupDetailsDto } from "../types/groups";
 import type { UserConnectionDto } from "../../profile/types/social";
-import { formatPeso, signedPeso } from "../../../shared/utils/format";
+import { formatCurrency, signedCurrency } from "../../../shared/utils/format";
 
 export default function GroupDetailsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { currency } = useCurrency();
   const { groupId } = useParams();
   const id = Number(groupId);
   const [group, setGroup] = useState<GroupDetailsDto | null>(null);
@@ -120,7 +122,7 @@ export default function GroupDetailsPage() {
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold text-gray-900 dark:text-white">{group.name}</h1>
-          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{group.members.length} members, you will receive {formatPeso(totalToReceive)} total</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">{group.members.length} members, you will receive {formatCurrency(totalToReceive, currency)} total</p>
         </div>
         <div className="flex items-center gap-3">
           <Link
@@ -179,7 +181,7 @@ export default function GroupDetailsPage() {
               </div>
               <div className="flex items-center gap-2">
                 <p className="text-xs font-bold" style={{ color: balance.positive ? "#16a34a" : "#dc2626" }}>
-                  {signedPeso(balance.amount)}
+                  {signedCurrency(balance.amount, currency)}
                 </p>
                 <button
                   onClick={() => handleSettle(balance.email)}
@@ -214,9 +216,9 @@ export default function GroupDetailsPage() {
                 <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{expense.sub}</p>
               </div>
               <div className="text-right">
-                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{formatPeso(expense.amount)}</p>
+                <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{formatCurrency(expense.amount, currency)}</p>
                 <p className="text-xs font-bold mt-0.5" style={{ color: expense.positive ? "#16a34a" : "#dc2626" }}>
-                  {signedPeso(expense.share)}
+                  {signedCurrency(expense.share, currency)}
                 </p>
               </div>
             </button>

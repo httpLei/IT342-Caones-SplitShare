@@ -56,6 +56,9 @@ public class User implements UserDetails {
     @Builder.Default
     private Instant createdAt = Instant.now();
 
+    @Column(nullable = true)
+    private String currency;
+
     // ── UserDetails ──────────────────────────────────────────────────────────
 
     @Override

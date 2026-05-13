@@ -1,4 +1,4 @@
-import { formatPeso, signedPeso } from '../../../utils/format';
+import { formatCurrency, formatPeso, signedCurrency, signedPeso } from '../../../shared/utils/format';
 
 describe('Format Utilities', () => {
   describe('formatPeso', () => {
@@ -32,6 +32,20 @@ describe('Format Utilities', () => {
     });
   });
 
+  describe('formatCurrency', () => {
+    it('should convert php to usd', () => {
+      expect(formatCurrency(50, 'USD')).toBe('$0.81');
+    });
+
+    it('should convert php to eur', () => {
+      expect(formatCurrency(50, 'EUR')).toBe('€0.69');
+    });
+
+    it('should keep php amounts unchanged in php format', () => {
+      expect(formatCurrency(50, 'PHP')).toBe('₱50.00');
+    });
+  });
+
   describe('signedPeso', () => {
     it('should format positive amount with + sign', () => {
       expect(signedPeso(500)).toBe('+₱500.00');
@@ -56,6 +70,16 @@ describe('Format Utilities', () => {
     it('should maintain precision for financial calculations', () => {
       // Test common split scenario: 1500 / 3 = 500
       expect(signedPeso(1500 / 3)).toMatch(/500/);
+    });
+  });
+
+  describe('signedCurrency', () => {
+    it('should convert and sign usd amounts', () => {
+      expect(signedCurrency(50, 'USD')).toBe('+$0.81');
+    });
+
+    it('should convert and sign eur amounts', () => {
+      expect(signedCurrency(-50, 'EUR')).toBe('-€0.69');
     });
   });
 

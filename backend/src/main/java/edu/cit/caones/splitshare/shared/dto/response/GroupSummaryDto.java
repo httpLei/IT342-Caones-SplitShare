@@ -14,6 +14,8 @@ public class GroupSummaryDto {
     private String name;
     private List<String> members;
     private BigDecimal total;
+    private BigDecimal owed;
+    private BigDecimal owe;
     private BigDecimal balance;
     private Instant createdAt;
 }

@@ -3,6 +3,8 @@ export interface GroupSummaryDto {
   name: string;
   members: string[];
   total: number;
+  owed?: number;
+  owe?: number;
   balance: number;
   createdAt: string;
 }

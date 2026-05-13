@@ -1,16 +1,33 @@
-import { useState } from "react";
-import { Sun, Moon, Monitor, Save, Bell, DollarSign } from "lucide-react";
-import { useTheme } from "../ThemeContext";
+import { useEffect, useState } from "react";
+import { Sun, Moon, Monitor, Save, DollarSign, Tag } from "lucide-react";
+import { useTheme } from "../contexts/ThemeContext";
+import { useCategories, PREDEFINED_CATEGORIES } from "../contexts/CategoriesContext";
+import { useCurrency } from "../contexts/CurrencyContext";
+import { userApi } from "../../profile/services/userService";
+import { useAuth } from "../../auth/AuthContext";
 
 export default function SettingsPage() {
-  const { theme, setTheme, isDark } = useTheme();
-  const [currency, setCurrency] = useState("PHP (Philippine Peso)");
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
+  const { theme, setTheme } = useTheme();
+  const { selectedCategories, setSelectedCategories } = useCategories();
+  const { currency, setCurrency } = useCurrency();
+  const [localCurrency, setLocalCurrency] = useState(currency);
   const [appSettingsNotice, setAppSettingsNotice] = useState("");
+  const { user: authUser, updateUser } = useAuth();
+
+  useEffect(() => {
+    setLocalCurrency(currency);
+  }, [currency]);
 
   const saveAppSettings = () => {
     setAppSettingsNotice("✓ Preferences saved successfully!");
     setTimeout(() => setAppSettingsNotice(""), 3000);
+  };
+
+  const toggleCategory = (category: string) => {
+    const updated = selectedCategories.includes(category)
+      ? selectedCategories.filter((c: string) => c !== category)
+      : [...selectedCategories, category];
+    setSelectedCategories(updated);
   };
 
   const themeOptions = [
@@ -73,32 +90,73 @@ export default function SettingsPage() {
               Default Currency
             </label>
             <select
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
+              value={localCurrency}
+              onChange={(e) => setLocalCurrency(e.target.value as any)}
               className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-purple-500 transition duration-200"
             >
-              <option>PHP (Philippine Peso)</option>
-              <option>USD (US Dollar)</option>
-              <option>EUR (Euro)</option>
+              <option value="PHP">PHP (Philippine Peso)</option>
+              <option value="USD">USD (US Dollar)</option>
+              <option value="EUR">EUR (Euro)</option>
             </select>
           </div>
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
-              <Bell size={18} style={{ color: "#662498" }} />
-              Notifications
-            </label>
-            <button
-              onClick={() => setNotificationsEnabled((prev) => !prev)}
-              className="w-full px-4 py-3 rounded-xl border-2 text-sm font-semibold cursor-pointer transition duration-200 hover:shadow-md"
-              style={{
-                borderColor: notificationsEnabled ? "#662498" : "#e5e7eb",
-                color: notificationsEnabled ? "#662498" : "#6b7280",
-                background: notificationsEnabled ? "#f5f0ff" : (isDark ? "#374151" : "#ffffff"),
-              }}
+        </div>
+
+        <div className="mt-6 flex gap-3">
+          <button
+            onClick={() => {
+              // Persist to backend and update auth/user + local currency
+              const currentUser = authUser;
+              userApi
+                .updateProfile(currentUser?.firstname || "", currentUser?.lastname || "", localCurrency)
+                .then((res) => {
+                  if (res.data && res.data.data) {
+                    const updated = res.data.data;
+                    updateUser(updated);
+                    setCurrency(updated.currency || localCurrency as any);
+                    setAppSettingsNotice("✓ Preferences saved successfully!");
+                    setTimeout(() => setAppSettingsNotice(""), 3000);
+                  }
+                })
+                .catch(() => {
+                  // fallback to local-only if api fails
+                  setCurrency(localCurrency as any);
+                  setAppSettingsNotice("✓ Preferences saved locally (server update failed)");
+                  setTimeout(() => setAppSettingsNotice(""), 3000);
+                });
+            }}
+            className="px-6 py-3 text-sm font-bold text-white rounded-xl transition duration-200 hover:shadow-lg transform hover:scale-105 flex items-center gap-2 cursor-pointer"
+            style={{ background: "linear-gradient(135deg, #662498 0%, #a855f7 100%)" }}
+          >
+            <Save size={18} />
+            Save Preferences
+          </button>
+        </div>
+      </section>
+
+      <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6 transition duration-300">
+        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
+          <Tag size={20} style={{ color: "#662498" }} />
+          Expense Categories
+        </h2>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Select which categories to display in your app</p>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {PREDEFINED_CATEGORIES.map((category) => (
+            <label
+              key={category}
+              className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition duration-200"
             >
-              {notificationsEnabled ? "🔔 Enabled" : "🔇 Disabled"}
-            </button>
-          </div>
+              <input
+                type="checkbox"
+                checked={selectedCategories.includes(category)}
+                onChange={() => toggleCategory(category)}
+                className="w-5 h-5 rounded cursor-pointer"
+                style={{
+                  accentColor: "#662498",
+                }}
+              />
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{category}</span>
+            </label>
+          ))}
         </div>
 
         {appSettingsNotice && (
@@ -114,7 +172,7 @@ export default function SettingsPage() {
             style={{ background: "linear-gradient(135deg, #662498 0%, #a855f7 100%)" }}
           >
             <Save size={18} />
-            Save Preferences
+            Save Categories
           </button>
         </div>
       </section>

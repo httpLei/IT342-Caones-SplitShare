@@ -15,6 +15,7 @@ export interface UserDto {
   firstname: string;
   lastname: string;
   role?: string;
+  currency?: string;
 }
 
 export interface AuthData {

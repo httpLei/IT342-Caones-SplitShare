@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Search } from "lucide-react";
+import { useCurrency } from "../../settings/contexts/CurrencyContext";
 import { userApi } from "../../profile/services/userService";
 import type { UserActivityDto } from "../../profile/types/social";
-import { formatPeso, signedPeso } from "../../../shared/utils/format";
+import { formatCurrency, signedCurrency } from "../../../shared/utils/format";
 
 export default function ActivityPage() {
   const navigate = useNavigate();
+  const { currency } = useCurrency();
   const [activitySearch, setActivitySearch] = useState("");
   const [activityRows, setActivityRows] = useState<UserActivityDto[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,8 +79,8 @@ export default function ActivityPage() {
                   <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{a.sub}</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{formatPeso(a.amount)}</p>
-                  <p className="text-xs font-bold mt-0.5" style={{ color: a.positive ? "#16a34a" : "#dc2626" }}>{signedPeso(a.share)}</p>
+                  <p className="text-sm font-semibold text-gray-700 dark:text-gray-300">{formatCurrency(a.amount, currency)}</p>
+                  <p className="text-xs font-bold mt-0.5" style={{ color: a.positive ? "#16a34a" : "#dc2626" }}>{signedCurrency(a.share, currency)}</p>
                 </div>
               </button>
             ))

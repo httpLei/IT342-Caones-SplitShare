@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
+import { useCategories } from "../../settings/contexts/CategoriesContext";
 type Props = {
   open: boolean;
   loading?: boolean;
@@ -15,15 +16,16 @@ type Props = {
 };
 
 export default function AddExpenseModal({ open, loading = false, error = "", mode = "create", initialValues, onClose, onSubmit }: Props) {
+  const { selectedCategories } = useCategories();
   const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("Food");
+  const [category, setCategory] = useState("");
   const [amount, setAmount] = useState("");
   const [receipt, setReceipt] = useState<File | null>(null);
 
   useEffect(() => {
     if (!open) {
       setDescription("");
-      setCategory("Food");
+      setCategory("");
       setAmount("");
       setReceipt(null);
     } else if (initialValues) {
@@ -31,8 +33,11 @@ export default function AddExpenseModal({ open, loading = false, error = "", mod
       setCategory(initialValues.category);
       setAmount(String(initialValues.amount));
       setReceipt(null);
+    } else {
+      // Set default category to first selected category
+      setCategory(selectedCategories[0] || "Food");
     }
-  }, [open, initialValues]);
+  }, [open, initialValues, selectedCategories]);
 
   if (!open) return null;
 
@@ -71,13 +76,21 @@ export default function AddExpenseModal({ open, loading = false, error = "", mod
           <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div>
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Category</label>
-              <input
+              <select
                 required
                 value={category}
                 onChange={(event) => setCategory(event.target.value)}
                 className="w-full rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-white px-4 py-3 text-sm outline-none focus:border-purple-400"
-                placeholder="Food"
-              />
+              >
+                <option value="" disabled>
+                  Select a category
+                </option>
+                {selectedCategories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
             </div>
             <div>
               <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Amount</label>

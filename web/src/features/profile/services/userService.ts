@@ -9,8 +9,8 @@ export const userApi = {
   getFollowing: () => api.get<ApiResponse<UserConnectionDto[]>>('/users/me/following'),
   getMyHistory: () => api.get<ApiResponse<UserActivityDto[]>>('/users/me/history'),
   getProfileStats: () => api.get<ApiResponse<UserProfileStatsDto>>('/users/me/stats'),
-  updateProfile: (firstname: string, lastname: string) =>
-    api.put<ApiResponse<UserDto>>('/users/me', { firstname, lastname }),
+  updateProfile: (firstname: string, lastname: string, currency?: string) =>
+    api.put<ApiResponse<UserDto>>('/users/me', { firstname, lastname, currency }),
   follow: (id: number) => api.post<ApiResponse<string>>(`/users/${id}/follow`),
   unfollow: (id: number) => api.delete<ApiResponse<string>>(`/users/${id}/follow`),
 };

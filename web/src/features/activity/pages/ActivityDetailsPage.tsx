@@ -1,14 +1,16 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../../auth/AuthContext";
+import { useCurrency } from "../../settings/contexts/CurrencyContext";
 import AddExpenseModal from "../../groups/components/AddExpenseModal";
 import { expenseApi } from "../../groups/services/groupService";
 import type { ExpenseDto } from "../../groups/types/groups";
-import { formatPeso, signedPeso } from "../../../shared/utils/format";
+import { formatCurrency, signedCurrency } from "../../../shared/utils/format";
 
 export default function ActivityDetailsPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { currency } = useCurrency();
   const { activityId, groupId } = useParams();
   const id = Number(activityId);
   const gid = Number(groupId);
@@ -125,12 +127,12 @@ export default function ActivityDetailsPage() {
           </div>
           <div>
             <p className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">Total Amount</p>
-            <p className="text-sm font-medium text-gray-800 dark:text-gray-300 mt-1">{formatPeso(detail.amount)}</p>
+            <p className="text-sm font-medium text-gray-800 dark:text-gray-300 mt-1">{formatCurrency(detail.amount, currency)}</p>
           </div>
           <div>
             <p className="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400 font-semibold">Your Share</p>
             <p className="text-sm font-bold mt-1" style={{ color: isCredit ? "#16a34a" : "#dc2626" }}>
-              {signedPeso(detail.share)}
+              {signedCurrency(detail.share, currency)}
             </p>
           </div>
           <div>

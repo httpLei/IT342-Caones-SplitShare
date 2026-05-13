@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import { LayoutDashboard, Users, Activity, User, Settings, LogOut, Menu, X } from "lucide-react";
 import { useAuth } from "../../auth/AuthContext";
-import { useTheme } from "../../settings/ThemeContext";
+import { useTheme } from "../../settings/contexts/ThemeContext";
 
 const NAV = [
   { key: "dashboard", label: "Dashboard", path: "/dashboard", icon: LayoutDashboard },

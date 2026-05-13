@@ -160,12 +160,16 @@ public class UserSocialService {
         if (request.getLastname() != null && !request.getLastname().isBlank()) {
             user.setLastname(request.getLastname().trim());
         }
+        if (request.getCurrency() != null && !request.getCurrency().isBlank()) {
+            user.setCurrency(request.getCurrency().trim());
+        }
         userRepository.save(user);
         return UserDto.builder()
                 .email(user.getEmail())
                 .firstname(user.getFirstname())
                 .lastname(user.getLastname())
                 .role(user.getRole().name())
+                .currency(user.getCurrency())
                 .build();
     }
 

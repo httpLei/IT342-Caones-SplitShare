@@ -2,15 +2,17 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, TrendingUp, TrendingDown, DollarSign, Users } from "lucide-react";
 import { useAuth } from "../../auth/AuthContext";
-import { useTheme } from "../../settings/ThemeContext";
+import { useTheme } from "../../settings/contexts/ThemeContext";
+import { useCurrency } from "../../settings/contexts/CurrencyContext";
 import { groupApi } from "../../groups/services/groupService";
 import type { GroupSummaryDto } from "../../groups/types/groups";
-import { formatPeso, signedPeso } from "../../../shared/utils/format";
+import { formatCurrency, signedCurrency } from "../../../shared/utils/format";
 
 export default function DashboardPage() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isDark } = useTheme();
+  const { currency } = useCurrency();
   const [groups, setGroups] = useState<GroupSummaryDto[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -18,7 +20,8 @@ export default function DashboardPage() {
   useEffect(() => {
     let active = true;
     setLoading(true);
-    groupApi.getGroups()
+    groupApi
+      .getGroups()
       .then((response) => {
         if (!active) return;
         setGroups(response.data.data ?? []);
@@ -37,14 +40,20 @@ export default function DashboardPage() {
   }, []);
 
   const metrics = useMemo(() => {
-    const positive = groups.reduce((sum, group) => sum + Math.max(group.balance, 0), 0);
-    const negative = groups.reduce((sum, group) => sum + Math.abs(Math.min(group.balance, 0)), 0);
+    const positive = groups.reduce((sum, group) => sum + (group.owed ?? Math.max(group.balance, 0)), 0);
+    const negative = groups.reduce((sum, group) => sum + (group.owe ?? Math.abs(Math.min(group.balance, 0))), 0);
     return {
       net: positive - negative,
       owed: positive,
       owe: negative,
     };
   }, [groups]);
+
+  const cards = [
+    { label: "Net Balance", value: signedCurrency(metrics.net, currency), sub: "Across all groups", color: "#662498", bg: "#f5f0ff", darkBg: "#3d2463", icon: DollarSign },
+    { label: "You are owed", value: signedCurrency(metrics.owed, currency), sub: "Positive balances", color: "#16a34a", bg: "#f0fdf4", darkBg: "#1f3a1f", icon: TrendingUp },
+    { label: "You owe", value: signedCurrency(-metrics.owe, currency), sub: "Negative balances", color: "#dc2626", bg: "#fef2f2", darkBg: "#3a1f1f", icon: TrendingDown },
+  ];
 
   return (
     <div className="space-y-8">
@@ -66,11 +75,7 @@ export default function DashboardPage() {
       {error && <div className="rounded-2xl border border-red-200 bg-red-50 dark:bg-red-900/30 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-300">{error}</div>}
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        {[
-          { label: "Net Balance", value: signedPeso(metrics.net), sub: "Across all groups", color: "#662498", bg: "#f5f0ff", darkBg: "#3d2463", icon: DollarSign },
-          { label: "You are owed", value: signedPeso(metrics.owed), sub: "Positive balances", color: "#16a34a", bg: "#f0fdf4", darkBg: "#1f3a1f", icon: TrendingUp },
-          { label: "You owe", value: signedPeso(-metrics.owe), sub: "Negative balances", color: "#dc2626", bg: "#fef2f2", darkBg: "#3a1f1f", icon: TrendingDown }
-        ].map((card) => {
+        {cards.map((card) => {
           const Icon = card.icon;
           return (
             <div key={card.label} className="rounded-2xl p-6 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-md transition duration-200" style={{ background: isDark ? card.darkBg : card.bg }}>
@@ -117,15 +122,15 @@ export default function DashboardPage() {
                     <Users size={18} style={{ color: "#662498" }} />
                   </div>
                 </div>
-                <p className="text-xs text-gray-500 dark:text-gray-400">{group.members.length} member{group.members.length !== 1 ? 's' : ''}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{group.members.length} member{group.members.length !== 1 ? "s" : ""}</p>
                 <div className="flex items-end justify-between mt-6 pt-4 border-t border-gray-100 dark:border-gray-700">
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{formatPeso(group.total)} total</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{formatCurrency(group.total, currency)} total</p>
                   <div className="text-right">
                     <p className="text-sm font-bold" style={{ color: group.balance >= 0 ? "#16a34a" : "#dc2626" }}>
-                      {signedPeso(group.balance)}
+                      {signedCurrency(group.balance, currency)}
                     </p>
                     <p className="text-xs font-medium" style={{ color: group.balance >= 0 ? "#16a34a" : "#dc2626" }}>
-                      {group.balance >= 0 ? "owed to you" : "you owe"}
+                      {(group.owed ?? Math.max(group.balance, 0)) > 0 ? "owed to you" : "you owe"}
                     </p>
                   </div>
                 </div>

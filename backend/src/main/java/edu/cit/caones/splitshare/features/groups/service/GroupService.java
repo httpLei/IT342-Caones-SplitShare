@@ -210,13 +210,34 @@ public class GroupService {
 
     private GroupSummaryDto toSummaryDto(Group group, String currentUserEmail) {
         BigDecimal total = sumExpenses(group.getExpenses());
-        BigDecimal myBalance = calculateBalanceForUser(group, currentUserEmail);
+        Map<String, BigDecimal> balances = calculatePairwiseBalances(group, group.getExpenses(), currentUserEmail);
+        Map<String, BigDecimal> settledByCounterpart = getSettledAmountsByCounterpart(group.getId(), currentUserEmail);
+        applySettlementsToPairwiseBalances(balances, settledByCounterpart);
+
+        BigDecimal owed = balances.entrySet().stream()
+            .filter(entry -> !entry.getKey().equalsIgnoreCase(currentUserEmail))
+            .map(Map.Entry::getValue)
+            .filter(amount -> amount.compareTo(BigDecimal.ZERO) > 0)
+            .reduce(BigDecimal.ZERO, BigDecimal::add)
+            .setScale(2, RoundingMode.HALF_UP);
+
+        BigDecimal owe = balances.entrySet().stream()
+            .filter(entry -> !entry.getKey().equalsIgnoreCase(currentUserEmail))
+            .map(Map.Entry::getValue)
+            .filter(amount -> amount.compareTo(BigDecimal.ZERO) < 0)
+            .map(BigDecimal::abs)
+            .reduce(BigDecimal.ZERO, BigDecimal::add)
+            .setScale(2, RoundingMode.HALF_UP);
+
+        BigDecimal myBalance = owed.subtract(owe).setScale(2, RoundingMode.HALF_UP);
 
         return GroupSummaryDto.builder()
                 .id(group.getId())
                 .name(group.getName())
                 .members(group.getMembers().stream().map(member -> member.getUser().getFirstname() + " " + member.getUser().getLastname()).toList())
                 .total(total)
+            .owed(owed)
+            .owe(owe)
                 .balance(myBalance)
                 .createdAt(group.getCreatedAt())
                 .build();

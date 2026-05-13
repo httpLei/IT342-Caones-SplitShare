@@ -2,16 +2,18 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Plus, Search, UserPlus, Users, TrendingDown, TrendingUp } from "lucide-react";
 import CreateGroupModal from "../components/CreateGroupModal";
-import { useTheme } from "../../settings/ThemeContext";
+import { useTheme } from "../../settings/contexts/ThemeContext";
+import { useCurrency } from "../../settings/contexts/CurrencyContext";
 import { groupApi } from "../services/groupService";
 import { userApi } from "../../profile/services/userService";
 import type { GroupSummaryDto } from "../types/groups";
 import type { UserConnectionDto } from "../../profile/types/social";
-import { formatPeso, signedPeso } from "../../../shared/utils/format";
+import { formatCurrency, signedCurrency } from "../../../shared/utils/format";
 
 export default function GroupsPage() {
   const navigate = useNavigate();
   const { isDark } = useTheme();
+  const { currency } = useCurrency();
   const [connectionQuery, setConnectionQuery] = useState("");
   const [connectionResults, setConnectionResults] = useState<UserConnectionDto[]>([]);
   const [connectionLoading, setConnectionLoading] = useState(false);
@@ -259,13 +261,13 @@ export default function GroupsPage() {
                     <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1">
                       <Users size={14} /> {group.members.length} member{group.members.length !== 1 ? 's' : ''}
                     </p>
-                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Total: {formatPeso(group.total)}</p>
+                    <p className="text-xs text-gray-400 dark:text-gray-500 mt-1">Total: {formatCurrency(group.total, currency)}</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="flex items-center gap-1 justify-end">
                     {group.balance >= 0 ? <TrendingUp size={16} style={{ color: "#16a34a" }} /> : <TrendingDown size={16} style={{ color: "#dc2626" }} />}
-                    <p className="text-xl font-bold" style={{ color: group.balance >= 0 ? "#16a34a" : "#dc2626" }}>{signedPeso(group.balance)}</p>
+                    <p className="text-xl font-bold" style={{ color: group.balance >= 0 ? "#16a34a" : "#dc2626" }}>{signedCurrency(group.balance, currency)}</p>
                   </div>
                   <p className="text-xs font-medium mt-0.5" style={{ color: group.balance >= 0 ? "#16a34a" : "#dc2626" }}>
                     {group.balance >= 0 ? "owed to you" : "you owe"}
