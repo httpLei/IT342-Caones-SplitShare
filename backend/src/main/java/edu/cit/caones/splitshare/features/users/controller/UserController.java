@@ -1,6 +1,7 @@
 package edu.cit.caones.splitshare.features.users.controller;
 
 import edu.cit.caones.splitshare.shared.dto.request.UpdateProfileRequest;
+import edu.cit.caones.splitshare.shared.dto.request.ChangePasswordRequest;
 import edu.cit.caones.splitshare.shared.dto.response.ApiResponse;
 import edu.cit.caones.splitshare.shared.dto.response.UserActivityDto;
 import edu.cit.caones.splitshare.shared.dto.response.UserConnectionDto;
@@ -44,6 +45,11 @@ public class UserController {
     @PutMapping("/me")
     public ResponseEntity<ApiResponse<UserDto>> updateProfile(@RequestBody UpdateProfileRequest request, Authentication authentication) {
         return ResponseEntity.ok(ApiResponse.ok(userSocialService.updateProfile(request, authentication.getName())));
+    }
+
+    @PostMapping("/me/password")
+    public ResponseEntity<ApiResponse<String>> changePassword(@RequestBody ChangePasswordRequest request, Authentication authentication) {
+        return ResponseEntity.ok(ApiResponse.ok(userSocialService.changePassword(request, authentication.getName())));
     }
 
     @GetMapping("/search")

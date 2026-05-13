@@ -1,6 +1,7 @@
 package edu.cit.caones.splitshare.features.users.service;
 
 import edu.cit.caones.splitshare.shared.dto.request.UpdateProfileRequest;
+import edu.cit.caones.splitshare.shared.dto.request.ChangePasswordRequest;
 import edu.cit.caones.splitshare.shared.dto.response.UserConnectionDto;
 import edu.cit.caones.splitshare.shared.dto.response.UserDto;
 import edu.cit.caones.splitshare.shared.dto.response.UserProfileStatsDto;
@@ -10,6 +11,7 @@ import edu.cit.caones.splitshare.features.groups.repository.GroupRepository;
 import edu.cit.caones.splitshare.features.users.repository.UserFollowRepository;
 import edu.cit.caones.splitshare.features.auth.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +27,7 @@ public class UserSocialService {
     private final UserRepository userRepository;
     private final UserFollowRepository userFollowRepository;
     private final GroupRepository groupRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Transactional(readOnly = true)
     public List<UserConnectionDto> searchUsers(String query, String currentUserEmail) {
@@ -160,6 +163,15 @@ public class UserSocialService {
         if (request.getLastname() != null && !request.getLastname().isBlank()) {
             user.setLastname(request.getLastname().trim());
         }
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            String newEmail = request.getEmail().trim();
+            if (!newEmail.equalsIgnoreCase(user.getEmail())) {
+                if (userRepository.findByEmailIgnoreCase(newEmail).isPresent()) {
+                    throw new IllegalArgumentException("Email is already in use");
+                }
+                user.setEmail(newEmail);
+            }
+        }
         if (request.getCurrency() != null && !request.getCurrency().isBlank()) {
             user.setCurrency(request.getCurrency().trim());
         }
@@ -171,6 +183,17 @@ public class UserSocialService {
                 .role(user.getRole().name())
                 .currency(user.getCurrency())
                 .build();
+    }
+
+    @Transactional
+    public String changePassword(ChangePasswordRequest request, String currentUserEmail) {
+        User user = getCurrentUser(currentUserEmail);
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
+        userRepository.save(user);
+        return "Password updated successfully";
     }
 
     private User getCurrentUser(String currentUserEmail) {

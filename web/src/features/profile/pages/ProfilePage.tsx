@@ -12,6 +12,7 @@ export default function ProfilePage() {
   const [settingsLastName, setSettingsLastName] = useState("");
   const [settingsEmail, setSettingsEmail] = useState("");
   const [settingsNotice, setSettingsNotice] = useState("");
+  const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordNotice, setPasswordNotice] = useState("");
@@ -48,7 +49,7 @@ export default function ProfilePage() {
 
   const saveProfileSettings = async () => {
     try {
-      const response = await userApi.updateProfile(settingsFirstName, settingsLastName);
+      const response = await userApi.updateProfile(settingsFirstName, settingsLastName, settingsEmail);
       if (response.data.success && response.data.data && token) {
         const updatedUser = response.data.data;
         const refreshToken = localStorage.getItem("refreshToken") || "";
@@ -62,9 +63,9 @@ export default function ProfilePage() {
     }
   };
 
-  const updatePassword = () => {
-    if (!newPassword || !confirmPassword) {
-      setPasswordNotice("Please complete password fields.");
+  const updatePassword = async () => {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      setPasswordNotice("Please complete all password fields.");
       return;
     }
     if (newPassword.length < 8) {
@@ -76,9 +77,17 @@ export default function ProfilePage() {
       return;
     }
 
-    setPasswordNotice("Password updated successfully.");
-    setNewPassword("");
-    setConfirmPassword("");
+    try {
+      await userApi.updatePassword(currentPassword, newPassword);
+      setPasswordNotice("Password updated successfully.");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => setPasswordNotice(""), 3000);
+    } catch (error) {
+      console.error("Failed to update password", error);
+      setPasswordNotice("Failed to update password. Please check your current password and try again.");
+    }
   };
 
   const openConnections = async (mode: "followers" | "following") => {
@@ -186,6 +195,10 @@ export default function ProfilePage() {
           <div className="md:col-span-2">
             <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Email</label>
             <input value={settingsEmail} onChange={(e) => setSettingsEmail(e.target.value)} className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-gray-900 dark:text-white transition focus:outline-none focus:ring-2 focus:ring-purple-500" />
+          </div>
+          <div>
+            <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Current password</label>
+            <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} className="w-full rounded-xl border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 px-3 py-2.5 text-gray-900 dark:text-white transition focus:outline-none focus:ring-2 focus:ring-purple-500" />
           </div>
           <div>
             <label className="mb-2 block text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">New password</label>

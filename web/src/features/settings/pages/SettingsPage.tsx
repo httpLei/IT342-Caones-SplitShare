@@ -107,7 +107,7 @@ export default function SettingsPage() {
               // Persist to backend and update auth/user + local currency
               const currentUser = authUser;
               userApi
-                .updateProfile(currentUser?.firstname || "", currentUser?.lastname || "", localCurrency)
+                .updateProfile(currentUser?.firstname || "", currentUser?.lastname || "", currentUser?.email || "", localCurrency)
                 .then((res) => {
                   if (res.data && res.data.data) {
                     const updated = res.data.data;
