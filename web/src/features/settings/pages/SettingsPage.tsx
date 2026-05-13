@@ -39,13 +39,13 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Settings ⚙️</h1>
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Settings</h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Customize your app experience</p>
       </div>
 
       <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6 transition duration-300">
         <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
-          🎨 Appearance
+          Appearance
         </h2>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">Choose your preferred theme</p>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -74,14 +74,14 @@ export default function SettingsPage() {
         </div>
         <div className="mt-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800">
           <p className="text-xs text-blue-700 dark:text-blue-300">
-            💡 Tip: The {theme === "system" ? "System" : theme} theme is currently active. Changes apply immediately.
+            💡Tip: The {theme === "system" ? "System" : theme} theme is currently active. Changes apply immediately.
           </p>
         </div>
       </section>
 
       <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6 transition duration-300">
         <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
-          ⚙️ Preferences
+          Preferences
         </h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
@@ -177,14 +177,7 @@ export default function SettingsPage() {
         </div>
       </section>
 
-      <section className="bg-white dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm p-6 transition duration-300">
-        <h2 className="text-lg font-bold text-gray-900 dark:text-white mb-4">ℹ️ About</h2>
-        <div className="space-y-3 text-sm text-gray-600 dark:text-gray-400">
-          <p><span className="font-semibold">App:</span> SplitShare</p>
-          <p><span className="font-semibold">Version:</span> 1.0.0</p>
-          <p><span className="font-semibold">Built with:</span> React, TypeScript & Tailwind CSS</p>
-        </div>
-      </section>
+      
     </div>
   );
 }

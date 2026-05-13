@@ -59,7 +59,7 @@ export default function DashboardPage() {
     <div className="space-y-8">
       <div className="flex items-start justify-between">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Hello, {user?.firstname}! 👋</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Hello, {user?.firstname}! </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Here&apos;s your shared expense summary</p>
         </div>
         <button
@@ -110,7 +110,7 @@ export default function DashboardPage() {
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            {groups.slice(0, 2).map((group) => (
+            {groups.map((group) => (
               <button
                 key={group.id}
                 onClick={() => navigate(`/groups/${group.id}`)}

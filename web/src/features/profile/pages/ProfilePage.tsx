@@ -7,7 +7,7 @@ import type { UserConnectionDto, UserProfileStatsDto } from "../types/social";
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { user, login, token } = useAuth();
+  const { user, login, token, logout } = useAuth();
   const [settingsFirstName, setSettingsFirstName] = useState("");
   const [settingsLastName, setSettingsLastName] = useState("");
   const [settingsEmail, setSettingsEmail] = useState("");
@@ -16,6 +16,7 @@ export default function ProfilePage() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordNotice, setPasswordNotice] = useState("");
+  const [showEmailChangeModal, setShowEmailChangeModal] = useState(false);
   const [stats, setStats] = useState<UserProfileStatsDto | null>(null);
   const [showFollowersModal, setShowFollowersModal] = useState(false);
   const [showFollowingModal, setShowFollowingModal] = useState(false);
@@ -47,11 +48,24 @@ export default function ProfilePage() {
     setFollowing(response.data.data ?? []);
   };
 
-  const saveProfileSettings = async () => {
+  const submitProfileSettings = async (skipEmailWarning = false) => {
     try {
+      const emailChanged = (user?.email ?? "") !== settingsEmail.trim();
+      if (emailChanged && !skipEmailWarning) {
+        setShowEmailChangeModal(true);
+        return;
+      }
+
       const response = await userApi.updateProfile(settingsFirstName, settingsLastName, settingsEmail);
       if (response.data.success && response.data.data && token) {
         const updatedUser = response.data.data;
+        if (emailChanged) {
+          setShowEmailChangeModal(false);
+          logout();
+          navigate("/login", { replace: true });
+          return;
+        }
+
         const refreshToken = localStorage.getItem("refreshToken") || "";
         login(updatedUser, token, refreshToken);
         setSettingsNotice("Settings saved successfully.");
@@ -61,6 +75,14 @@ export default function ProfilePage() {
       console.error("Failed to update profile", error);
       setSettingsNotice("Failed to save settings. Please try again.");
     }
+  };
+
+  const saveProfileSettings = () => {
+    void submitProfileSettings();
+  };
+
+  const confirmEmailChange = () => {
+    void submitProfileSettings(true);
   };
 
   const updatePassword = async () => {
@@ -221,6 +243,35 @@ export default function ProfilePage() {
           </button>
         </div>
       </section>
+
+      {showEmailChangeModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4" onClick={() => setShowEmailChangeModal(false)}>
+          <div className="w-full max-w-md rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white">Change email address?</h3>
+            <p className="mt-2 text-sm leading-6 text-gray-600 dark:text-gray-300">
+              Updating your email will sign you out after the change is saved. You will need to sign in again with the new email address.
+            </p>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowEmailChangeModal(false)}
+                className="flex-1 rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 transition hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmEmailChange}
+                className="flex-1 rounded-xl px-4 py-3 text-sm font-bold text-white shadow-sm transition hover:shadow-lg cursor-pointer"
+                style={{ background: "linear-gradient(135deg, #662498 0%, #a855f7 100%)" }}
+              >
+                OK, continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {(showFollowersModal || showFollowingModal) && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={closeConnectionsModals}>

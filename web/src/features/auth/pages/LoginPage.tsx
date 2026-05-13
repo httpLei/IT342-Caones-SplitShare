@@ -92,7 +92,7 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="you@example.com"
-                    className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg outline-none transition focus:ring-2 focus:ring-purple-200"
+                    className="w-full pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 border border-gray-200 rounded-lg outline-none transition focus:ring-2 focus:ring-purple-200"
                     onFocus={(e) => (e.target.style.borderColor = "#662498")}
                     onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
                   />
@@ -109,7 +109,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg outline-none transition focus:ring-2 focus:ring-purple-200"
+                    className="w-full pl-10 pr-4 py-2.5 text-sm text-gray-900 placeholder-gray-400 border border-gray-200 rounded-lg outline-none transition focus:ring-2 focus:ring-purple-200"
                     onFocus={(e) => (e.target.style.borderColor = "#662498")}
                     onBlur={(e) => (e.target.style.borderColor = "#e5e7eb")}
                   />

@@ -139,7 +139,7 @@ export default function GroupsPage() {
     <div className="space-y-8">
       <div className="flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Groups 👥</h1>
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Groups </h1>
           <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Manage your shared expense groups</p>
         </div>
         <button
@@ -183,7 +183,7 @@ export default function GroupsPage() {
 
           <div className="mt-4 space-y-2 max-h-48 overflow-y-auto">
             {connectionLoading ? (
-              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">🔍 Searching users...</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4"> Searching users...</p>
             ) : connectionResults.length === 0 ? (
               <></>
             ) : (
@@ -253,8 +253,8 @@ export default function GroupsPage() {
                 className="w-full rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm bg-white dark:bg-gray-800 px-4 py-4 flex items-center justify-between gap-4 text-left cursor-pointer hover:border-purple-300 dark:hover:border-purple-500 hover:shadow-md transition duration-200"
               >
                 <div className="flex items-center gap-4 flex-1">
-                  <div className="w-12 h-12 rounded-lg flex items-center justify-center text-xl" style={{ background: isDark ? "#4c1d95" : "#f3e8ff" }}>
-                    👥
+                  <div className="w-12 h-12 rounded-lg flex items-center justify-center" style={{ background: isDark ? "#4c1d95" : "#f3e8ff" }}>
+                    <Users size={20} color={isDark ? "#ffffff" : "#662498"} />
                   </div>
                   <div>
                     <p className="text-lg font-bold text-gray-900 dark:text-white">{group.name}</p>

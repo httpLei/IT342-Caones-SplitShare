@@ -40,7 +40,7 @@ export default function ActivityPage() {
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Activity 📊</h1>
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Activity </h1>
         <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Your complete transaction history</p>
       </div>
 
