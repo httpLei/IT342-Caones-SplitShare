@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="14dp"
+    android:background="@color/surface">
+
+    <!-- Icon container -->
+    <TextView
+        android:id="@+id/tvActivityIcon"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:background="@drawable/bg_icon_container"
+        android:text="🛒"
+        android:textSize="16sp"
+        android:gravity="center" />
+
+    <!-- Text -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical"
+        android:layout_marginStart="12dp">
+
+        <TextView
+            android:id="@+id/tvActivityTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Groceries — SM"
+            android:textSize="14sp"
+            android:textColor="@color/text_primary" />
+
+        <TextView
+            android:id="@+id/tvActivitySubtitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Roommates · Paid by you · today"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary" />
+    </LinearLayout>
+
+    <!-- Amount -->
+    <TextView
+        android:id="@+id/tvActivityAmount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+₱175.00"
+        android:textSize="14sp"
+        android:fontFamily="sans-serif-medium"
+        android:textColor="@color/green_owed" />
+
+</LinearLayout>

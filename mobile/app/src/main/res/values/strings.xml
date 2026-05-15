@@ -1,3 +1,69 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">SplitShare</string>
+
+    <!-- Auth -->
+    <string name="sign_in">Sign In</string>
+    <string name="sign_up">Sign Up</string>
+    <string name="email">Email</string>
+    <string name="password">Password</string>
+    <string name="confirm_password">Confirm Password</string>
+    <string name="first_name">First Name</string>
+    <string name="last_name">Last Name</string>
+    <string name="dont_have_account">Don\'t have an account? Sign Up</string>
+    <string name="already_have_account">Already have an account? Sign In</string>
+    <string name="welcome_back">Welcome back 👋</string>
+    <string name="create_account">Create your account</string>
+    <string name="login_subtitle">Sign in to manage your shared expenses</string>
+    <string name="register_subtitle">Start tracking shared expenses with friends</string>
+
+    <!-- Dashboard -->
+    <string name="net_balance">Net Balance</string>
+    <string name="you_are_owed">You are owed</string>
+    <string name="you_owe">You owe</string>
+    <string name="your_groups">Your Groups</string>
+    <string name="recent_activity">Recent Activity</string>
+    <string name="add_expense">Add Expense</string>
+    <string name="settle_up">Settle Up</string>
+    <string name="new_group">New Group</string>
+    <string name="see_all">See all</string>
+
+    <!-- Group -->
+    <string name="members">members</string>
+    <string name="balances">Balances</string>
+    <string name="expenses">Expenses</string>
+    <string name="paid_by">Paid by</string>
+    <string name="your_share">Your share</string>
+    <string name="receipt">Receipt</string>
+    <string name="total">Total</string>
+    <string name="settled">Settled ✓</string>
+    <string name="owed_label">Owed</string>
+    <string name="owes_label">Owes</string>
+
+    <!-- Add Expense -->
+    <string name="amount">Amount</string>
+    <string name="description">Description</string>
+    <string name="category">Category</string>
+    <string name="group">Group</string>
+    <string name="date">Date</string>
+    <string name="attach_receipt">Attach receipt photo</string>
+    <string name="save_expense">Save Expense</string>
+    <string name="cancel">Cancel</string>
+    <string name="new_expense">New Expense</string>
+    <string name="split_with">Split with</string>
+
+    <!-- Settle Up -->
+    <string name="who_you_owe">Who you owe</string>
+    <string name="who_owes_you">Who owes you</string>
+    <string name="confirm_settle">Confirm settlement</string>
+    <string name="settle_confirm_msg">Mark this payment as settled?</string>
+    <string name="confirm">Confirm</string>
+    <string name="remind">Remind</string>
+    <string name="settle">Settle</string>
+
+    <!-- Nav -->
+    <string name="nav_home">Home</string>
+    <string name="nav_groups">Groups</string>
+    <string name="nav_history">History</string>
+    <string name="nav_profile">Profile</string>
 </resources>

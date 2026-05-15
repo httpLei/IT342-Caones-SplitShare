@@ -1,9 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Base.Theme.SplitShare" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/purple_primary</item>
+        <item name="colorOnPrimary">@color/white</item>
+        <item name="colorSecondary">@color/purple_medium</item>
+        <item name="colorSurface">@color/surface</item>
+        <item name="android:colorBackground">@color/background</item>
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:statusBarColor">@color/surface</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="23">true</item>
     </style>
 
-    <style name="Theme.SplitShare" parent="Base.Theme.SplitShare" />
+    <style name="SplitShare" parent="Base.Theme.SplitShare" />
+
+    <!-- Card style -->
+    <style name="SplitShare.Card" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardElevation">0dp</item>
+        <item name="strokeWidth">1dp</item>
+        <item name="strokeColor">@color/border</item>
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardBackgroundColor">@color/surface</item>
+    </style>
+
+    <!-- Primary button -->
+    <style name="SplitShare.Button.Primary" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/purple_primary</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="cornerRadius">10dp</item>
+        <item name="android:textSize">15sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Outline button -->
+    <style name="SplitShare.Button.Outline" parent="Widget.Material3.Button.OutlinedButton">
+        <item name="strokeColor">@color/border</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="cornerRadius">10dp</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <!-- Text input -->
+    <style name="SplitShare.TextInput" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxStrokeColor">@color/border</item>
+        <item name="boxCornerRadiusTopStart">10dp</item>
+        <item name="boxCornerRadiusTopEnd">10dp</item>
+        <item name="boxCornerRadiusBottomStart">10dp</item>
+        <item name="boxCornerRadiusBottomEnd">10dp</item>
+        <item name="hintTextColor">@color/text_hint</item>
+        <item name="android:textColorHint">@color/text_hint</item>
+    </style>
+
+    <!-- Section label -->
+    <style name="SplitShare.SectionLabel">
+        <item name="android:textSize">11sp</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:letterSpacing">0.08</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Badge owed -->
+    <style name="SplitShare.Badge" parent="TextAppearance.AppCompat">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">@color/surface</item>
+        <item name="android:background">@color/purple_primary</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:paddingTop">4dp</item>
+        <item name="android:paddingBottom">4dp</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="SplitShare.Badge.Owed">
+        <item name="android:background">@drawable/bg_badge_owed</item>
+        <item name="android:textColor">@color/green_owed</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:paddingTop">3dp</item>
+        <item name="android:paddingBottom">3dp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Badge owe -->
+    <style name="SplitShare.Badge.Owe">
+        <item name="android:background">@drawable/bg_badge_owe</item>
+        <item name="android:textColor">@color/red_owe</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:paddingStart">8dp</item>
+        <item name="android:paddingEnd">8dp</item>
+        <item name="android:paddingTop">3dp</item>
+        <item name="android:paddingBottom">3dp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
 </resources>
