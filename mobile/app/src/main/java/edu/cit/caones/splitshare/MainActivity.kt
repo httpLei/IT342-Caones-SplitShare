@@ -16,9 +16,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Redirect to login if not authenticated
         if (!SessionManager.isLoggedIn()) {
-            startActivity(Intent(this, LoginActivity::class.java))
+            startActivity(Intent(this, LoginActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            })
             finish()
             return
         }
@@ -33,7 +34,6 @@ class MainActivity : AppCompatActivity() {
 
         setupNavigation()
 
-        // Load home fragment on start
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, HomeFragment())
@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupNavigation() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
-        val fab = findViewById<FloatingActionButton>(R.id.fabAddExpense)
+        val fab       = findViewById<FloatingActionButton>(R.id.fabAddExpense)
 
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -53,22 +53,8 @@ class MainActivity : AppCompatActivity() {
                         .commit()
                     true
                 }
-                R.id.nav_groups -> {
-                    // TODO: Replace with GroupsFragment
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragmentContainer, HomeFragment())
-                        .commit()
-                    true
-                }
-                R.id.nav_history -> {
-                    // TODO: Replace with HistoryFragment
-                    supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragmentContainer, HomeFragment())
-                        .commit()
-                    true
-                }
-                R.id.nav_profile -> {
-                    // TODO: Replace with ProfileFragment
+                R.id.nav_groups, R.id.nav_history, R.id.nav_profile -> {
+                    // TODO: Replace with dedicated fragments
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.fragmentContainer, HomeFragment())
                         .commit()

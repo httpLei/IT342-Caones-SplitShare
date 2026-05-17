@@ -7,13 +7,22 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.lifecycleScope
+import com.google.android.material.button.MaterialButton
 import edu.cit.caones.splitshare.R
 import edu.cit.caones.splitshare.SessionManager
-import edu.cit.caones.splitshare.model.ActivityItem
 import edu.cit.caones.splitshare.model.Group
+import edu.cit.caones.splitshare.network.RetrofitClient
+import edu.cit.caones.splitshare.network.dto.GroupSummaryDto
+import edu.cit.caones.splitshare.network.dto.UserActivityDto
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.NumberFormat
 import java.util.Locale
+import kotlin.math.abs
 
 class HomeFragment : Fragment() {
 
@@ -24,6 +33,11 @@ class HomeFragment : Fragment() {
     private lateinit var tvYouOwe: TextView
     private lateinit var llGroups: LinearLayout
     private lateinit var llActivity: LinearLayout
+    private lateinit var tvGroupsEmpty: TextView
+    private lateinit var tvActivityEmpty: TextView
+    private lateinit var tvGroupsLoading: TextView
+    private lateinit var tvActivityLoading: TextView
+    private lateinit var tvGlobalError: TextView
 
     private val php = NumberFormat.getCurrencyInstance(Locale("en", "PH")).apply {
         currency = java.util.Currency.getInstance("PHP")
@@ -36,115 +50,174 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         bindViews(view)
+        setupLogoutButton(view)
         populateHeader()
-        populateGroups()
-        populateActivity()
+        loadDashboard()
     }
 
     private fun bindViews(view: View) {
-        tvGreeting = view.findViewById(R.id.tvGreeting)
-        tvAvatar = view.findViewById(R.id.tvAvatar)
-        tvNetBalance = view.findViewById(R.id.tvNetBalance)
-        tvOwedToYou = view.findViewById(R.id.tvOwedToYou)
-        tvYouOwe = view.findViewById(R.id.tvYouOwe)
-        llGroups = view.findViewById(R.id.llGroups)
-        llActivity = view.findViewById(R.id.llActivity)
+        tvGreeting       = view.findViewById(R.id.tvGreeting)
+        tvAvatar         = view.findViewById(R.id.tvAvatar)
+        tvNetBalance     = view.findViewById(R.id.tvNetBalance)
+        tvOwedToYou      = view.findViewById(R.id.tvOwedToYou)
+        tvYouOwe         = view.findViewById(R.id.tvYouOwe)
+        llGroups         = view.findViewById(R.id.llGroups)
+        llActivity       = view.findViewById(R.id.llActivity)
+        tvGroupsEmpty    = view.findViewById(R.id.tvGroupsEmpty)
+        tvActivityEmpty  = view.findViewById(R.id.tvActivityEmpty)
+        tvGroupsLoading  = view.findViewById(R.id.tvGroupsLoading)
+        tvActivityLoading = view.findViewById(R.id.tvActivityLoading)
+        tvGlobalError    = view.findViewById(R.id.tvGlobalError)
+    }
+
+    private fun setupLogoutButton(view: View) {
+        view.findViewById<MaterialButton>(R.id.btnLogout)?.setOnClickListener {
+            showLogoutDialog()
+        }
     }
 
     private fun populateHeader() {
         val user = SessionManager.getCurrentUser()
         tvGreeting.text = "Hey, ${user?.firstName ?: "there"} 👋"
-        tvAvatar.text = user?.initials ?: "?"
+        tvAvatar.text   = user?.initials ?: "?"
     }
 
-    private fun populateGroups() {
-        // Mock data — replace with API call GET /groups
-        val groups = listOf(
-            Group("g1", "Roommates", "🏠", 4, 12400.0, 340.0),
-            Group("g2", "Japan Trip", "✈️", 6, 58200.0, -200.0),
-            Group("g3", "Barkada Lunches", "🍕", 3, 4100.0, 0.0)
-        )
+    private fun loadDashboard() {
+        showGroupsLoading(true)
+        showActivityLoading(true)
+        tvGlobalError.visibility = View.GONE
 
-        var totalOwed = 0.0
-        var totalOwe = 0.0
-        groups.forEach { g ->
-            if (g.myBalance > 0) totalOwed += g.myBalance
-            else if (g.myBalance < 0) totalOwe += (-g.myBalance)
+        viewLifecycleOwner.lifecycleScope.launch {
+            // Load groups
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.api.getGroups()
+                }
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val groups = response.body()?.data ?: emptyList()
+                    renderGroups(groups)
+                } else {
+                    val msg = response.body()?.error?.message ?: "Failed to load groups."
+                    showGlobalError(msg)
+                }
+            } catch (e: Exception) {
+                showGlobalError("Cannot reach server. Is the backend running?")
+            } finally {
+                showGroupsLoading(false)
+            }
+
+            // Load recent activity
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.api.getMyHistory()
+                }
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val items = response.body()?.data ?: emptyList()
+                    renderActivity(items)
+                }
+                // Activity loading failure is non-blocking — just show empty
+            } catch (e: Exception) {
+                // non-fatal
+            } finally {
+                showActivityLoading(false)
+            }
         }
+    }
 
-        val net = totalOwed - totalOwe
+    // ── Groups rendering ──────────────────────────────────────────────────────
+
+    private fun renderGroups(groups: List<GroupSummaryDto>) {
+        // Calculate totals for the balance hero card
+        val totalOwed = groups.sumOf { it.owed ?: maxOf(it.balance, 0.0) }
+        val totalOwe  = groups.sumOf { it.owe  ?: abs(minOf(it.balance, 0.0)) }
+        val net       = totalOwed - totalOwe
+
         tvNetBalance.text = if (net >= 0) "+${php.format(net)}" else php.format(net)
-        tvOwedToYou.text = php.format(totalOwed)
-        tvYouOwe.text = php.format(totalOwe)
+        tvOwedToYou.text  = php.format(totalOwed)
+        tvYouOwe.text     = php.format(totalOwe)
 
         llGroups.removeAllViews()
-        groups.forEach { group -> addGroupCard(group) }
+
+        if (groups.isEmpty()) {
+            tvGroupsEmpty.visibility = View.VISIBLE
+            return
+        }
+        tvGroupsEmpty.visibility = View.GONE
+
+        groups.forEach { dto ->
+            val card = layoutInflater.inflate(R.layout.item_group_card, llGroups, false)
+
+            card.findViewById<TextView>(R.id.tvGroupEmoji).text =
+                emojiForGroup(dto.name)
+            card.findViewById<TextView>(R.id.tvGroupName).text    = dto.name
+            card.findViewById<TextView>(R.id.tvGroupMembers).text =
+                "${dto.members.size} member${if (dto.members.size != 1) "s" else ""}"
+            card.findViewById<TextView>(R.id.tvGroupTotal).text   =
+                "Total: ${php.format(dto.total)}"
+
+            val badge   = card.findViewById<TextView>(R.id.tvGroupBadge)
+            val balance = dto.balance
+            when {
+                balance > 0 -> {
+                    badge.text = "Owed ${php.format(balance)}"
+                    badge.background = resources.getDrawable(R.drawable.bg_badge_owed, null)
+                    badge.setTextColor(resources.getColor(R.color.green_owed, null))
+                }
+                balance < 0 -> {
+                    badge.text = "Owe ${php.format(abs(balance))}"
+                    badge.background = resources.getDrawable(R.drawable.bg_badge_owe, null)
+                    badge.setTextColor(resources.getColor(R.color.red_owe, null))
+                }
+                else -> {
+                    badge.text = "Settled ✓"
+                    badge.background = resources.getDrawable(R.drawable.bg_badge_settled, null)
+                    badge.setTextColor(resources.getColor(R.color.text_secondary, null))
+                }
+            }
+
+            card.setOnClickListener {
+                val intent = Intent(requireContext(), GroupDetailActivity::class.java).apply {
+                    putExtra(GroupDetailActivity.EXTRA_GROUP_ID,    dto.id.toString())
+                    putExtra(GroupDetailActivity.EXTRA_GROUP_NAME,  dto.name)
+                    putExtra(GroupDetailActivity.EXTRA_GROUP_EMOJI, emojiForGroup(dto.name))
+                }
+                startActivity(intent)
+            }
+
+            llGroups.addView(card)
+        }
     }
 
-    private fun addGroupCard(group: Group) {
-        val card = layoutInflater.inflate(R.layout.item_group_card, llGroups, false)
-        card.findViewById<TextView>(R.id.tvGroupEmoji).text = group.emoji
-        card.findViewById<TextView>(R.id.tvGroupName).text = group.name
-        card.findViewById<TextView>(R.id.tvGroupMembers).text = "${group.memberCount} members"
-        card.findViewById<TextView>(R.id.tvGroupTotal).text = "Total: ${php.format(group.totalAmount)}"
+    // ── Activity rendering ────────────────────────────────────────────────────
 
-        val badge = card.findViewById<TextView>(R.id.tvGroupBadge)
-        when {
-            group.myBalance > 0 -> {
-                badge.text = "Owed ${php.format(group.myBalance)}"
-                badge.background = resources.getDrawable(R.drawable.bg_badge_owed, null)
-                badge.setTextColor(resources.getColor(R.color.green_owed, null))
-            }
-            group.myBalance < 0 -> {
-                badge.text = "Owe ${php.format(-group.myBalance)}"
-                badge.background = resources.getDrawable(R.drawable.bg_badge_owe, null)
-                badge.setTextColor(resources.getColor(R.color.red_owe, null))
-            }
-            else -> {
-                badge.text = "Settled ✓"
-                badge.background = resources.getDrawable(R.drawable.bg_badge_settled, null)
-                badge.setTextColor(resources.getColor(R.color.text_secondary, null))
-            }
-        }
-
-        card.setOnClickListener {
-            val intent = Intent(requireContext(), GroupDetailActivity::class.java).apply {
-                putExtra(GroupDetailActivity.EXTRA_GROUP_ID, group.id)
-                putExtra(GroupDetailActivity.EXTRA_GROUP_NAME, group.name)
-                putExtra(GroupDetailActivity.EXTRA_GROUP_EMOJI, group.emoji)
-            }
-            startActivity(intent)
-        }
-
-        llGroups.addView(card)
-    }
-
-    private fun populateActivity() {
-        // Mock data — replace with GET /users/me/history
-        val items = listOf(
-            ActivityItem("Groceries — SM", "Roommates · Paid by you · today", 175.0, "🛒", true),
-            ActivityItem("Shinkansen tickets", "Japan Trip · Paid by Carlo · yesterday", -200.0, "✈️", false),
-            ActivityItem("Settle up — Mia paid you", "Roommates · 2 days ago", 500.0, "💰", true),
-            ActivityItem("Dinner — Yakimix", "Barkada Lunches · Paid by you · 3 days ago", 165.0, "🍜", true)
-        )
-
+    private fun renderActivity(items: List<UserActivityDto>) {
         llActivity.removeAllViews()
-        items.forEachIndexed { index, item ->
+
+        if (items.isEmpty()) {
+            tvActivityEmpty.visibility = View.VISIBLE
+            return
+        }
+        tvActivityEmpty.visibility = View.GONE
+
+        // Show at most 5 most recent items on the dashboard
+        items.take(5).forEachIndexed { index, item ->
             val row = layoutInflater.inflate(R.layout.item_activity, llActivity, false)
-            row.findViewById<TextView>(R.id.tvActivityIcon).text = item.emoji
-            row.findViewById<TextView>(R.id.tvActivityTitle).text = item.title
-            row.findViewById<TextView>(R.id.tvActivitySubtitle).text = item.subtitle
+
+            row.findViewById<TextView>(R.id.tvActivityIcon).text     = emojiForCategory(item.desc)
+            row.findViewById<TextView>(R.id.tvActivityTitle).text    = item.desc
+            row.findViewById<TextView>(R.id.tvActivitySubtitle).text = item.sub
 
             val amountTv = row.findViewById<TextView>(R.id.tvActivityAmount)
-            val absAmount = Math.abs(item.amount)
-            amountTv.text = if (item.isPositive) "+${php.format(absAmount)}" else "-${php.format(absAmount)}"
+            val shareAbs = abs(item.share)
+            amountTv.text = if (item.positive) "+${php.format(shareAbs)}"
+                            else "-${php.format(shareAbs)}"
             amountTv.setTextColor(
-                if (item.isPositive) resources.getColor(R.color.green_owed, null)
+                if (item.positive) resources.getColor(R.color.green_owed, null)
                 else resources.getColor(R.color.red_owe, null)
             )
 
-            // Add a divider between items (not after last)
-            if (index < items.size - 1) {
+            // Divider between items
+            if (index < minOf(items.size, 5) - 1) {
                 val divider = View(requireContext())
                 divider.layoutParams = LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, 1
@@ -155,6 +228,70 @@ class HomeFragment : Fragment() {
             } else {
                 llActivity.addView(row)
             }
+        }
+    }
+
+    // ── Logout ────────────────────────────────────────────────────────────────
+
+    private fun showLogoutDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Sign out?")
+            .setMessage("Are you sure you want to sign out of SplitShare?")
+            .setPositiveButton("Sign out") { _, _ ->
+                SessionManager.logout()
+                startActivity(
+                    Intent(requireContext(), LoginActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                )
+            }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private fun showGroupsLoading(loading: Boolean) {
+        tvGroupsLoading.visibility  = if (loading) View.VISIBLE else View.GONE
+        llGroups.visibility         = if (loading) View.GONE    else View.VISIBLE
+    }
+
+    private fun showActivityLoading(loading: Boolean) {
+        tvActivityLoading.visibility = if (loading) View.VISIBLE else View.GONE
+        llActivity.visibility        = if (loading) View.GONE    else View.VISIBLE
+    }
+
+    private fun showGlobalError(message: String) {
+        tvGlobalError.text       = message
+        tvGlobalError.visibility = View.VISIBLE
+    }
+
+    /** Simple emoji picker based on group name keywords */
+    private fun emojiForGroup(name: String): String {
+        val lower = name.lowercase()
+        return when {
+            lower.contains("room") || lower.contains("house") || lower.contains("flat") -> "🏠"
+            lower.contains("trip") || lower.contains("travel") || lower.contains("japan")
+                || lower.contains("vacation") -> "✈️"
+            lower.contains("food") || lower.contains("lunch") || lower.contains("dinner")
+                || lower.contains("barkada") -> "🍕"
+            lower.contains("gym") || lower.contains("sport") -> "🏋️"
+            else -> "👥"
+        }
+    }
+
+    /** Simple emoji picker based on the expense description */
+    private fun emojiForCategory(desc: String): String {
+        val lower = desc.lowercase()
+        return when {
+            lower.contains("groceries") || lower.contains("grocery") -> "🛒"
+            lower.contains("dinner") || lower.contains("food") || lower.contains("restaurant") -> "🍜"
+            lower.contains("electric") || lower.contains("water") || lower.contains("util")
+                || lower.contains("internet") || lower.contains("pldt") -> "⚡"
+            lower.contains("transport") || lower.contains("grab") || lower.contains("taxi") -> "🚌"
+            lower.contains("settle") -> "💰"
+            lower.contains("trip") || lower.contains("plane") || lower.contains("ticket") -> "✈️"
+            else -> "💳"
         }
     }
 }

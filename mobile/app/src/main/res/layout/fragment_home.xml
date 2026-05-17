@@ -11,7 +11,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Header row -->
+        <!-- Header row: greeting + avatar + logout -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -28,7 +28,7 @@
                     android:id="@+id/tvGreeting"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Hey, Lerah 👋"
+                    android:text="Hey there 👋"
                     android:textSize="13sp"
                     android:textColor="@color/text_secondary" />
                 <TextView
@@ -43,15 +43,40 @@
             <!-- Avatar -->
             <TextView
                 android:id="@+id/tvAvatar"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
                 android:background="@drawable/bg_avatar"
-                android:text="LA"
+                android:text="?"
                 android:textSize="13sp"
                 android:fontFamily="sans-serif-medium"
                 android:textColor="@color/purple_dark"
-                android:gravity="center" />
+                android:gravity="center"
+                android:layout_marginEnd="8dp" />
+
+            <!-- Logout button -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnLogout"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:text="Sign out"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                app:strokeColor="@color/border"
+                app:cornerRadius="8dp" />
         </LinearLayout>
+
+        <!-- Global error banner -->
+        <TextView
+            android:id="@+id/tvGlobalError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="#FAECE7"
+            android:textColor="@color/red_owe"
+            android:textSize="13sp"
+            android:padding="12dp"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone" />
 
         <!-- Balance Hero Card -->
         <LinearLayout
@@ -74,13 +99,12 @@
                 android:id="@+id/tvNetBalance"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="+₱340.00"
+                android:text="—"
                 android:textSize="30sp"
                 android:fontFamily="sans-serif-medium"
                 android:textColor="@color/white"
                 android:layout_marginBottom="16dp" />
 
-            <!-- Owed / You Owe row -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -101,13 +125,12 @@
                         android:id="@+id/tvOwedToYou"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="₱540.00"
+                        android:text="—"
                         android:textSize="16sp"
                         android:fontFamily="sans-serif-medium"
                         android:textColor="@color/white" />
                 </LinearLayout>
 
-                <!-- Divider -->
                 <View
                     android:layout_width="1dp"
                     android:layout_height="match_parent"
@@ -129,7 +152,7 @@
                         android:id="@+id/tvYouOwe"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="₱200.00"
+                        android:text="—"
                         android:textSize="16sp"
                         android:fontFamily="sans-serif-medium"
                         android:textColor="@color/white" />
@@ -137,7 +160,7 @@
             </LinearLayout>
         </LinearLayout>
 
-        <!-- Your Groups header -->
+        <!-- Your Groups section -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -150,24 +173,43 @@
                 android:layout_weight="1"
                 android:text="@string/your_groups"
                 style="@style/SplitShare.SectionLabel" />
-            <TextView
-                android:id="@+id/tvSeeAllGroups"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/see_all"
-                android:textSize="13sp"
-                android:textColor="@color/purple_primary" />
         </LinearLayout>
 
-        <!-- Groups list container -->
+        <!-- Groups loading indicator -->
+        <TextView
+            android:id="@+id/tvGroupsLoading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Loading groups…"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:gravity="center"
+            android:padding="16dp"
+            android:layout_marginBottom="4dp"
+            android:visibility="visible" />
+
+        <!-- Groups empty state -->
+        <TextView
+            android:id="@+id/tvGroupsEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No groups yet. Create one on the web app!"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:gravity="center"
+            android:padding="16dp"
+            android:visibility="gone" />
+
+        <!-- Groups list -->
         <LinearLayout
             android:id="@+id/llGroups"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginBottom="20dp" />
+            android:layout_marginBottom="20dp"
+            android:visibility="gone" />
 
-        <!-- Recent Activity header -->
+        <!-- Recent Activity section -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -175,16 +217,38 @@
             android:gravity="center_vertical"
             android:layout_marginBottom="10dp">
             <TextView
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
                 android:text="@string/recent_activity"
                 style="@style/SplitShare.SectionLabel" />
         </LinearLayout>
 
-        <!-- Activity list container -->
+        <!-- Activity loading indicator -->
+        <TextView
+            android:id="@+id/tvActivityLoading"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Loading activity…"
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:gravity="center"
+            android:padding="16dp"
+            android:visibility="visible" />
+
+        <!-- Activity empty state -->
+        <TextView
+            android:id="@+id/tvActivityEmpty"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No recent activity yet."
+            android:textSize="13sp"
+            android:textColor="@color/text_secondary"
+            android:gravity="center"
+            android:padding="16dp"
+            android:visibility="gone" />
+
+        <!-- Activity card -->
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardActivity"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             style="@style/SplitShare.Card">
@@ -192,7 +256,8 @@
                 android:id="@+id/llActivity"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical" />
+                android:orientation="vertical"
+                android:visibility="gone" />
         </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
