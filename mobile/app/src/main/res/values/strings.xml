@@ -62,8 +62,9 @@
     <string name="settle">Settle</string>
 
     <!-- Nav -->
-    <string name="nav_home">Home</string>
+    <string name="nav_dashboard">Dashboard</string>
     <string name="nav_groups">Groups</string>
-    <string name="nav_history">History</string>
-    <string name="nav_profile">Profile</string>
+    <string name="nav_add_expense">Add Expense</string>
+    <string name="nav_activity">Activity</string>
+    <string name="nav_settings">Settings</string>
 </resources>

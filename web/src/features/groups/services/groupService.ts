@@ -17,6 +17,7 @@ export const groupApi = {
   createGroup: (data: CreateGroupRequest) => api.post<ApiResponse<GroupSummaryDto>>('/groups', data),
   getGroup: (groupId: number) => api.get<ApiResponse<GroupDetailsDto>>(`/groups/${groupId}`),
   updateGroup: (groupId: number, data: UpdateGroupRequest) => api.put<ApiResponse<GroupDetailsDto>>(`/groups/${groupId}`, data),
+  deleteGroup: (groupId: number) => api.delete<ApiResponse<string>>(`/groups/${groupId}`),
   addExpense: (groupId: number, data: CreateExpenseRequest & { receipt?: File | null }) =>
     api.post<ApiResponse<GroupDetailsDto>>(`/groups/${groupId}/expenses`, buildExpenseFormData(data)),
   updateExpense: (groupId: number, expenseId: number, data: UpdateExpenseRequest & { receipt?: File | null }) =>

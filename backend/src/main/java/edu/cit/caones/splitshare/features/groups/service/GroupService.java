@@ -128,6 +128,17 @@ public class GroupService {
     }
 
     @Transactional
+    public void deleteGroup(Long groupId, String currentUserEmail) {
+        Group group = getAccessibleGroup(groupId, currentUserEmail);
+        if (!group.getCreatedBy().getEmail().equalsIgnoreCase(currentUserEmail)) {
+            throw new AccessDeniedException("Only the group creator can delete this group");
+        }
+
+        balanceSettlementRepository.deleteByGroup_Id(group.getId());
+        groupRepository.delete(group);
+    }
+
+    @Transactional
     public GroupDetailsDto confirmSettlement(Long groupId, String counterpartEmail, String currentUserEmail) {
         Group group = getAccessibleGroup(groupId, currentUserEmail);
 

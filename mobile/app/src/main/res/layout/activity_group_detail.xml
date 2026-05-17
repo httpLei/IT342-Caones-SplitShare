@@ -66,13 +66,35 @@
         android:padding="16dp"
         android:background="@color/surface">
 
+        <TextView
+            android:id="@+id/tvGroupLoading"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Loading group…"
+            android:textSize="12sp"
+            android:textColor="@color/text_secondary"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="12dp"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/tvGroupError"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@color/red_owe"
+            android:textSize="12sp"
+            android:visibility="gone"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="12dp" />
+
         <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSettleUp"
+            android:id="@+id/btnEditGroup"
             style="@style/SplitShare.Button.Outline"
             android:layout_width="0dp"
             android:layout_height="44dp"
             android:layout_weight="1"
-            android:text="@string/settle_up"
+            android:text="Edit Group"
             android:layout_marginEnd="8dp" />
 
         <com.google.android.material.button.MaterialButton

@@ -1,10 +1,8 @@
 package edu.cit.caones.splitshare.ui
 
 import android.app.DatePickerDialog
-import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.provider.MediaStore
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.ImageButton
@@ -12,15 +10,29 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.google.gson.Gson
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.chip.ChipGroup
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import edu.cit.caones.splitshare.R
+import edu.cit.caones.splitshare.SessionManager
+import edu.cit.caones.splitshare.network.RetrofitClient
+import edu.cit.caones.splitshare.network.dto.CreateExpenseRequest
+import edu.cit.caones.splitshare.network.dto.GroupSummaryDto
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.MultipartBody
+import okhttp3.RequestBody.Companion.toRequestBody
+import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
+import kotlin.math.max
 
 class AddExpenseActivity : AppCompatActivity() {
 
@@ -43,6 +55,10 @@ class AddExpenseActivity : AppCompatActivity() {
     private lateinit var btnSaveExpense: MaterialButton
 
     private var receiptUri: Uri? = null
+    private var selectedGroupId: Long? = null
+    private var loadedGroups: List<GroupSummaryDto> = emptyList()
+
+    private val json = Gson()
 
     private val pickImageLauncher = registerForActivityResult(
         ActivityResultContracts.GetContent()
@@ -64,6 +80,7 @@ class AddExpenseActivity : AppCompatActivity() {
         setupGroupDropdown(preselectedGroup)
         setupPaidByDropdown()
         setupDatePicker()
+        loadGroups(preselectedGroup)
 
         btnClose.setOnClickListener { finish() }
         btnAttachReceipt.setOnClickListener {
@@ -88,7 +105,7 @@ class AddExpenseActivity : AppCompatActivity() {
     }
 
     private fun setupGroupDropdown(preselected: String?) {
-        val groups = listOf("Roommates", "Japan Trip", "Barkada Lunches")
+        val groups = mutableListOf<String>()
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, groups)
         actvGroup.setAdapter(adapter)
         if (!preselected.isNullOrEmpty()) {
@@ -97,10 +114,41 @@ class AddExpenseActivity : AppCompatActivity() {
     }
 
     private fun setupPaidByDropdown() {
-        val members = listOf("You", "Mia Cruz", "Jake Reyes", "Sara Lim")
+        val currentUser = SessionManager.getCurrentUser()
+        val members = listOf(currentUser?.fullName?.trim().takeIf { !it.isNullOrBlank() } ?: "You")
         val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, members)
         actvPaidBy.setAdapter(adapter)
-        actvPaidBy.setText("You", false)
+        actvPaidBy.setText(members.first(), false)
+    }
+
+    private fun loadGroups(preselectedGroup: String?) {
+        lifecycleScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) { RetrofitClient.api.getGroups() }
+                if (response.isSuccessful && response.body()?.success == true) {
+                    loadedGroups = response.body()?.data ?: emptyList()
+                    val names = loadedGroups.map { it.name }
+                    (actvGroup.adapter as? ArrayAdapter<String>)?.clear()
+                    (actvGroup.adapter as? ArrayAdapter<String>)?.addAll(names)
+                    (actvGroup.adapter as? ArrayAdapter<String>)?.notifyDataSetChanged()
+
+                    actvGroup.setOnItemClickListener { _, _, position, _ ->
+                        selectedGroupId = loadedGroups.getOrNull(position)?.id
+                    }
+
+                    val selected = loadedGroups.firstOrNull {
+                        it.name.equals(preselectedGroup, ignoreCase = true)
+                    } ?: loadedGroups.firstOrNull { it.id == intent.getStringExtra(EXTRA_GROUP_ID)?.toLongOrNull() }
+
+                    selected?.let {
+                        selectedGroupId = it.id
+                        actvGroup.setText(it.name, false)
+                    }
+                }
+            } catch (_: Exception) {
+                // Keep the prefilled value from the intent and let validation handle it.
+            }
+        }
     }
 
     private fun setupDatePicker() {
@@ -126,12 +174,14 @@ class AddExpenseActivity : AppCompatActivity() {
     private fun attemptSave() {
         val amountStr = etAmount.text?.toString()?.trim() ?: ""
         val description = etDescription.text?.toString()?.trim() ?: ""
-        val group = actvGroup.text?.toString()?.trim() ?: ""
+        val groupName = actvGroup.text?.toString()?.trim().orEmpty()
+        val selectedCategory = selectedCategory()
+        val amount = amountStr.toDoubleOrNull()
 
         tvError.visibility = View.GONE
         var valid = true
 
-        if (amountStr.isEmpty() || amountStr.toDoubleOrNull() == null || amountStr.toDouble() <= 0) {
+        if (amount == null || amount <= 0) {
             tvError.text = "Please enter a valid amount"
             tvError.visibility = View.VISIBLE
             valid = false
@@ -142,8 +192,21 @@ class AddExpenseActivity : AppCompatActivity() {
         } else {
             tilDescription.error = null
         }
-        if (group.isEmpty()) {
+        if (groupName.isEmpty()) {
             tvError.text = "Please select a group"
+            tvError.visibility = View.VISIBLE
+            valid = false
+        }
+        if (selectedGroupId == null) {
+            selectedGroupId = loadedGroups.firstOrNull { it.name.equals(groupName, ignoreCase = true) }?.id
+        }
+        if (selectedGroupId == null) {
+            tvError.text = "Please choose a valid group"
+            tvError.visibility = View.VISIBLE
+            valid = false
+        }
+        if (selectedCategory.isBlank()) {
+            tvError.text = "Please select a category"
             tvError.visibility = View.VISIBLE
             valid = false
         }
@@ -152,10 +215,64 @@ class AddExpenseActivity : AppCompatActivity() {
         btnSaveExpense.isEnabled = false
         btnSaveExpense.text = "Saving..."
 
-        // TODO: POST to /expenses and if receiptUri != null, POST to /expenses/{id}/receipt
-        android.os.Handler(mainLooper).postDelayed({
-            setResult(RESULT_OK)
-            finish()
-        }, 600)
+        lifecycleScope.launch {
+            try {
+                val request = CreateExpenseRequest(
+                    description = description,
+                    category = selectedCategory,
+                    amount = amount!!
+                )
+
+                val dataPart = json.toJson(request)
+                    .toRequestBody("application/json".toMediaTypeOrNull())
+
+                val receiptPart = receiptUri?.let { uri ->
+                    val bytes = contentResolver.openInputStream(uri)?.use { input ->
+                        ByteArrayOutputStream().use { output ->
+                            input.copyTo(output)
+                            output.toByteArray()
+                        }
+                    }
+                    bytes?.let {
+                        MultipartBody.Part.createFormData(
+                            "receipt",
+                            "receipt.jpg",
+                            it.toRequestBody("image/jpeg".toMediaTypeOrNull())
+                        )
+                    }
+                }
+
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.api.addExpense(selectedGroupId!!, dataPart, receiptPart)
+                }
+
+                if (response.isSuccessful && response.body()?.success == true) {
+                    setResult(RESULT_OK)
+                    finish()
+                } else {
+                    tvError.text = response.body()?.error?.message ?: "Unable to save expense."
+                    tvError.visibility = View.VISIBLE
+                    btnSaveExpense.isEnabled = true
+                    btnSaveExpense.text = "Save Expense"
+                }
+            } catch (_: Exception) {
+                tvError.text = "Cannot reach server. Is the backend running?"
+                tvError.visibility = View.VISIBLE
+                btnSaveExpense.isEnabled = true
+                btnSaveExpense.text = "Save Expense"
+            }
+        }
+    }
+
+    private fun selectedCategory(): String {
+        val chipId = chipGroupCategory.checkedChipId
+        return when (chipId) {
+            R.id.chipRent -> "Rent"
+            R.id.chipUtilities -> "Utilities"
+            R.id.chipTransport -> "Transport"
+            R.id.chipShopping -> "Shopping"
+            R.id.chipOther -> "Other"
+            else -> "Food"
+        }
     }
 }

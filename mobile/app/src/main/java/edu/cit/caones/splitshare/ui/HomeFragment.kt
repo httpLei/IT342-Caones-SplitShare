@@ -7,13 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import edu.cit.caones.splitshare.R
 import edu.cit.caones.splitshare.SessionManager
-import edu.cit.caones.splitshare.model.Group
 import edu.cit.caones.splitshare.network.RetrofitClient
 import edu.cit.caones.splitshare.network.dto.GroupSummaryDto
 import edu.cit.caones.splitshare.network.dto.UserActivityDto
@@ -183,12 +183,43 @@ class HomeFragment : Fragment() {
                 }
                 startActivity(intent)
             }
+            card.setOnLongClickListener {
+                showDeleteGroupDialog(dto)
+                true
+            }
 
             llGroups.addView(card)
         }
     }
 
     // ── Activity rendering ────────────────────────────────────────────────────
+
+    private fun showDeleteGroupDialog(group: GroupSummaryDto) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete group?")
+            .setMessage("Delete ${group.name}? This will remove its expenses and balances.")
+            .setPositiveButton("Delete") { _, _ -> deleteGroup(group.id) }
+            .setNegativeButton("Cancel", null)
+            .show()
+    }
+
+    private fun deleteGroup(groupId: Long) {
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.api.deleteGroup(groupId)
+                }
+                if (response.isSuccessful && response.body()?.success == true) {
+                    Toast.makeText(requireContext(), "Group deleted", Toast.LENGTH_SHORT).show()
+                    loadDashboard()
+                } else {
+                    showGlobalError(response.body()?.error?.message ?: "Unable to delete group.")
+                }
+            } catch (_: Exception) {
+                showGlobalError("Cannot reach server. Is the backend running?")
+            }
+        }
+    }
 
     private fun renderActivity(items: List<UserActivityDto>) {
         llActivity.removeAllViews()

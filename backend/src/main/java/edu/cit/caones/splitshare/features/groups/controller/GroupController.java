@@ -59,6 +59,12 @@ public class GroupController {
         return ResponseEntity.ok(ApiResponse.ok(updated));
     }
 
+    @DeleteMapping("/{groupId}")
+    public ResponseEntity<ApiResponse<String>> deleteGroup(@PathVariable Long groupId, Authentication authentication) {
+        groupService.deleteGroup(groupId, authentication.getName());
+        return ResponseEntity.ok(ApiResponse.ok("Group deleted"));
+    }
+
     @PostMapping(value = "/{groupId}/expenses", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<ApiResponse<GroupDetailsDto>> addExpense(
             @PathVariable Long groupId,

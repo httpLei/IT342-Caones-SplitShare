@@ -16,4 +16,6 @@ public interface BalanceSettlementRepository extends JpaRepository<BalanceSettle
     List<BalanceSettlement> findByGroup_IdAndSettledAtIsNotNull(Long groupId);
 
     List<BalanceSettlement> findByGroup_IdAndSettledAtIsNull(Long groupId);
+
+    void deleteByGroup_Id(Long groupId);
 }

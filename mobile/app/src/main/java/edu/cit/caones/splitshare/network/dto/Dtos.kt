@@ -56,6 +56,74 @@ data class GroupSummaryDto(
     val createdAt: String
 )
 
+data class GroupMemberBalanceDto(
+    val name: String,
+    val email: String,
+    val initial: String,
+    val amount: Double,
+    val positive: Boolean,
+    val settlementPending: Boolean,
+    val settledByCurrentUser: Boolean
+)
+
+data class ExpenseDto(
+    val id: Long,
+    val groupId: Long,
+    val paidByEmail: String,
+    val paidByName: String,
+    val description: String,
+    val category: String,
+    val desc: String?,
+    val sub: String?,
+    val amount: Double,
+    val share: Double,
+    val positive: Boolean,
+    val receiptUrl: String?,
+    val createdAt: String
+)
+
+data class GroupDetailsDto(
+    val id: Long,
+    val name: String,
+    val members: List<String>,
+    val memberEmails: List<String>,
+    val total: Double,
+    val balance: Double,
+    val createdAt: String,
+    val balances: List<GroupMemberBalanceDto>,
+    val expenses: List<ExpenseDto>
+)
+
+data class CreateGroupRequest(
+    val name: String,
+    val memberEmails: List<String>
+)
+
+data class UpdateGroupRequest(
+    val name: String,
+    val memberEmails: List<String>
+)
+
+data class CreateExpenseRequest(
+    val description: String,
+    val category: String,
+    val amount: Double
+)
+
+data class SettleBalanceRequest(
+    val counterpartEmail: String
+)
+
+data class UserConnectionDto(
+    val id: Long,
+    val email: String,
+    val firstname: String,
+    val lastname: String,
+    val following: Boolean,
+    val followedBy: Boolean,
+    val mutual: Boolean
+)
+
 data class UserActivityDto(
     val id: Long,
     val desc: String,

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link, Navigate, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Edit, Plus } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Edit, Plus, Trash2 } from "lucide-react";
 import { useAuth } from "../../auth/AuthContext";
 import { useCurrency } from "../../settings/contexts/CurrencyContext";
 import AddExpenseModal from "../components/AddExpenseModal";
@@ -29,6 +29,8 @@ export default function GroupDetailsPage() {
   const [editError, setEditError] = useState("");
   const [settlingEmail, setSettlingEmail] = useState<string | null>(null);
   const [mutuals, setMutuals] = useState<UserConnectionDto[]>([]);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (!Number.isFinite(id)) return;
@@ -85,6 +87,23 @@ export default function GroupDetailsPage() {
     }
   };
 
+  const handleDeleteGroup = async () => {
+    if (!group) return;
+
+    setDeleting(true);
+    setSaveError("");
+    setSuccess("");
+    try {
+      await groupApi.deleteGroup(id);
+      navigate("/groups", { replace: true });
+    } catch (err: unknown) {
+      setSaveError((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message ?? "Unable to delete group.");
+      setShowDeleteModal(false);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   if (loading) {
     return <div className="rounded-2xl border border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 p-6 text-sm text-gray-500 dark:text-gray-400"><div className="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-purple-600 mb-2"></div><p>Loading group details...</p></div>;
   }
@@ -138,6 +157,13 @@ export default function GroupDetailsPage() {
           >
             <Edit size={16} />
             Edit Group
+          </button>
+          <button
+            onClick={() => setShowDeleteModal(true)}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-bold rounded-xl border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/30 transition"
+          >
+            <Trash2 size={16} />
+            Delete Group
           </button>
           <button
             onClick={() => setShowExpenseModal(true)}
@@ -247,6 +273,43 @@ export default function GroupDetailsPage() {
         onClose={() => setShowEditModal(false)}
         onSubmit={handleUpdateGroup}
       />
+
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4" onClick={() => !deleting && setShowDeleteModal(false)}>
+          <div className="w-full max-w-md rounded-2xl bg-white dark:bg-gray-800 p-6 shadow-2xl" onClick={(event) => event.stopPropagation()}>
+            <div className="flex items-start gap-4">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300">
+                <AlertTriangle size={22} />
+              </div>
+              <div>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white">Delete group?</h3>
+                <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                  Delete <span className="font-semibold text-gray-800 dark:text-gray-200">{group.name}</span>? This will remove its expenses and balances.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-6 flex gap-3">
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 rounded-xl border border-gray-200 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800 px-4 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={handleDeleteGroup}
+                className="flex-1 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60 cursor-pointer"
+              >
+                {deleting ? "Deleting..." : "Delete group"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

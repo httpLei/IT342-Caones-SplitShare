@@ -8,8 +8,10 @@ import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import edu.cit.caones.splitshare.ui.AddExpenseActivity
+import edu.cit.caones.splitshare.ui.GroupsFragment
 import edu.cit.caones.splitshare.ui.HomeFragment
 import edu.cit.caones.splitshare.ui.LoginActivity
+import edu.cit.caones.splitshare.ui.SectionPlaceholderFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -38,6 +40,7 @@ class MainActivity : AppCompatActivity() {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, HomeFragment())
                 .commit()
+            findViewById<BottomNavigationView>(R.id.bottomNav).selectedItemId = R.id.nav_dashboard
         }
     }
 
@@ -47,16 +50,39 @@ class MainActivity : AppCompatActivity() {
 
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.nav_home -> {
+                R.id.nav_dashboard -> {
                     supportFragmentManager.beginTransaction()
                         .replace(R.id.fragmentContainer, HomeFragment())
                         .commit()
                     true
                 }
-                R.id.nav_groups, R.id.nav_history, R.id.nav_profile -> {
-                    // TODO: Replace with dedicated fragments
+                R.id.nav_groups -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragmentContainer, HomeFragment())
+                        .replace(R.id.fragmentContainer, GroupsFragment())
+                        .commit()
+                    true
+                }
+                R.id.nav_activity -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(
+                            R.id.fragmentContainer,
+                            SectionPlaceholderFragment.newInstance(
+                                title = "Activity",
+                                message = "Recent activity will appear here soon."
+                            )
+                        )
+                        .commit()
+                    true
+                }
+                R.id.nav_settings -> {
+                    supportFragmentManager.beginTransaction()
+                        .replace(
+                            R.id.fragmentContainer,
+                            SectionPlaceholderFragment.newInstance(
+                                title = "Settings",
+                                message = "Profile and app settings will be added here next."
+                            )
+                        )
                         .commit()
                     true
                 }
