@@ -250,6 +250,12 @@ class GroupDetailActivity : AppCompatActivity() {
                 card.findViewById<TextView>(R.id.tvReceiptLabel).visibility = View.VISIBLE
             }
 
+            card.setOnClickListener {
+                startActivity(Intent(this, ActivityDetailActivity::class.java).apply {
+                    putExtra(ActivityDetailActivity.EXTRA_EXPENSE_ID, expense.id.toString())
+                })
+            }
+
             llExpenses.addView(card)
         }
     }

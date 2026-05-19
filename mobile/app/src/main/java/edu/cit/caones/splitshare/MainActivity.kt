@@ -8,6 +8,7 @@ import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import edu.cit.caones.splitshare.ui.AddExpenseActivity
+import edu.cit.caones.splitshare.ui.ActivityFragment
 import edu.cit.caones.splitshare.ui.GroupsFragment
 import edu.cit.caones.splitshare.ui.HomeFragment
 import edu.cit.caones.splitshare.ui.LoginActivity
@@ -64,13 +65,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.nav_activity -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(
-                            R.id.fragmentContainer,
-                            SectionPlaceholderFragment.newInstance(
-                                title = "Activity",
-                                message = "Recent activity will appear here soon."
-                            )
-                        )
+                        .replace(R.id.fragmentContainer, ActivityFragment())
                         .commit()
                     true
                 }

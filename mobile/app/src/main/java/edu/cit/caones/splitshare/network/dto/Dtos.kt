@@ -110,6 +110,12 @@ data class CreateExpenseRequest(
     val amount: Double
 )
 
+data class UpdateExpenseRequest(
+    val description: String,
+    val category: String,
+    val amount: Double
+)
+
 data class SettleBalanceRequest(
     val counterpartEmail: String
 )

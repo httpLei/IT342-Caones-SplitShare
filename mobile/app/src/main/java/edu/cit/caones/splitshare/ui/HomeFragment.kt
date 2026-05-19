@@ -247,6 +247,12 @@ class HomeFragment : Fragment() {
                 else resources.getColor(R.color.red_owe, null)
             )
 
+            row.setOnClickListener {
+                startActivity(Intent(requireContext(), ActivityDetailActivity::class.java).apply {
+                    putExtra(ActivityDetailActivity.EXTRA_EXPENSE_ID, item.id.toString())
+                })
+            }
+
             // Divider between items
             if (index < minOf(items.size, 5) - 1) {
                 val divider = View(requireContext())

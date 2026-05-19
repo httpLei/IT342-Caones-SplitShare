@@ -48,6 +48,20 @@ interface SplitShareApi {
     @POST("api/v1/groups/{groupId}/settlements")
     suspend fun settleBalance(@Path("groupId") groupId: Long, @Body request: SettleBalanceRequest): Response<ApiResponse<GroupDetailsDto>>
 
+    @GET("api/v1/expenses/{expenseId}")
+    suspend fun getExpense(@Path("expenseId") expenseId: Long): Response<ApiResponse<ExpenseDto>>
+
+    @Multipart
+    @PUT("api/v1/expenses/{expenseId}")
+    suspend fun updateExpense(
+        @Path("expenseId") expenseId: Long,
+        @Part("data") data: RequestBody,
+        @Part receipt: MultipartBody.Part? = null,
+    ): Response<ApiResponse<ExpenseDto>>
+
+    @DELETE("api/v1/expenses/{expenseId}")
+    suspend fun deleteExpense(@Path("expenseId") expenseId: Long): Response<ApiResponse<String>>
+
     @GET("api/v1/users/search")
     suspend fun searchUsers(@Query("q") query: String): Response<ApiResponse<List<UserConnectionDto>>>
 

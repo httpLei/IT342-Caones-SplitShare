@@ -52,6 +52,11 @@
             android:parentActivityName=".MainActivity" />
 
         <activity
+            android:name=".ui.ActivityDetailActivity"
+            android:exported="false"
+            android:parentActivityName=".MainActivity" />
+
+        <activity
             android:name=".ui.AddExpenseActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
