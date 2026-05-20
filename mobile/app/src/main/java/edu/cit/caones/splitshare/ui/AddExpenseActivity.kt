@@ -102,6 +102,35 @@ class AddExpenseActivity : AppCompatActivity() {
         tvReceiptStatus = findViewById(R.id.tvReceiptStatus)
         tvError = findViewById(R.id.tvError)
         btnSaveExpense = findViewById(R.id.btnSaveExpense)
+        
+        setupCategories()
+    }
+
+    private fun setupCategories() {
+        chipGroupCategory.removeAllViews()
+        val categories = SessionManager.getSelectedCategories()
+        val defaultCategories = if (categories.isEmpty()) setOf("Food", "Transport") else categories
+        
+        var firstChipId = -1
+        defaultCategories.forEachIndexed { index, cat ->
+            val chip = com.google.android.material.chip.Chip(this).apply {
+                id = View.generateViewId()
+                text = cat
+                isCheckable = true
+                isClickable = true
+                setChipDrawable(com.google.android.material.chip.ChipDrawable.createFromAttributes(
+                    this@AddExpenseActivity,
+                    null,
+                    0,
+                    com.google.android.material.R.style.Widget_Material3_Chip_Filter
+                ))
+            }
+            if (index == 0) {
+                firstChipId = chip.id
+                chip.isChecked = true
+            }
+            chipGroupCategory.addView(chip)
+        }
     }
 
     private fun setupGroupDropdown(preselected: String?) {
@@ -266,13 +295,10 @@ class AddExpenseActivity : AppCompatActivity() {
 
     private fun selectedCategory(): String {
         val chipId = chipGroupCategory.checkedChipId
-        return when (chipId) {
-            R.id.chipRent -> "Rent"
-            R.id.chipUtilities -> "Utilities"
-            R.id.chipTransport -> "Transport"
-            R.id.chipShopping -> "Shopping"
-            R.id.chipOther -> "Other"
-            else -> "Food"
+        if (chipId != View.NO_ID) {
+            val chip = chipGroupCategory.findViewById<com.google.android.material.chip.Chip>(chipId)
+            return chip?.text?.toString() ?: "Food"
         }
+        return "Food"
     }
 }

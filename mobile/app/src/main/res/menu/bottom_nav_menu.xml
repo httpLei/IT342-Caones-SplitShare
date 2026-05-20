@@ -9,10 +9,9 @@
         android:icon="@android:drawable/ic_menu_agenda"
         android:title="@string/nav_groups" />
     <item
-        android:id="@+id/nav_placeholder"
+        android:id="@+id/nav_add"
         android:icon="@android:drawable/ic_input_add"
-        android:title=""
-        android:enabled="false" />
+        android:title="" />
     <item
         android:id="@+id/nav_activity"
         android:icon="@android:drawable/ic_menu_recent_history"

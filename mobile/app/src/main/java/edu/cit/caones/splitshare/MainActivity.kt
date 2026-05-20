@@ -3,16 +3,22 @@ package edu.cit.caones.splitshare
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import com.google.android.material.floatingactionbutton.FloatingActionButton
+import edu.cit.caones.splitshare.network.RetrofitClient
+import edu.cit.caones.splitshare.network.dto.GroupSummaryDto
 import edu.cit.caones.splitshare.ui.AddExpenseActivity
 import edu.cit.caones.splitshare.ui.ActivityFragment
 import edu.cit.caones.splitshare.ui.GroupsFragment
 import edu.cit.caones.splitshare.ui.HomeFragment
 import edu.cit.caones.splitshare.ui.LoginActivity
-import edu.cit.caones.splitshare.ui.SectionPlaceholderFragment
+import edu.cit.caones.splitshare.ui.SettingsFragment
 
 class MainActivity : AppCompatActivity() {
 
@@ -47,7 +53,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun setupNavigation() {
         val bottomNav = findViewById<BottomNavigationView>(R.id.bottomNav)
-        val fab       = findViewById<FloatingActionButton>(R.id.fabAddExpense)
 
         bottomNav.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -71,22 +76,47 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.nav_settings -> {
                     supportFragmentManager.beginTransaction()
-                        .replace(
-                            R.id.fragmentContainer,
-                            SectionPlaceholderFragment.newInstance(
-                                title = "Settings",
-                                message = "Profile and app settings will be added here next."
-                            )
-                        )
+                        .replace(R.id.fragmentContainer, SettingsFragment())
                         .commit()
                     true
+                }
+                R.id.nav_add -> {
+                    showAddExpenseGroupPicker()
+                    false
                 }
                 else -> false
             }
         }
+    }
 
-        fab.setOnClickListener {
-            startActivity(Intent(this, AddExpenseActivity::class.java))
+    private fun showAddExpenseGroupPicker() {
+        lifecycleScope.launch {
+            try {
+                val response = withContext(Dispatchers.IO) { RetrofitClient.api.getGroups() }
+                if (response.isSuccessful && response.body()?.success == true) {
+                    val groups: List<GroupSummaryDto> = response.body()?.data ?: emptyList()
+                    if (groups.isEmpty()) {
+                        startActivity(Intent(this@MainActivity, AddExpenseActivity::class.java))
+                    } else {
+                        val names = groups.map { it.name }.toTypedArray()
+                        AlertDialog.Builder(this@MainActivity)
+                            .setTitle("Add expense to group")
+                            .setItems(names) { _, which: Int ->
+                                val g = groups[which]
+                                startActivity(Intent(this@MainActivity, AddExpenseActivity::class.java).apply {
+                                    putExtra(AddExpenseActivity.EXTRA_GROUP_ID, g.id.toString())
+                                    putExtra(AddExpenseActivity.EXTRA_GROUP_NAME, g.name)
+                                })
+                            }
+                            .setNegativeButton("Cancel", null)
+                            .show()
+                    }
+                } else {
+                    startActivity(Intent(this@MainActivity, AddExpenseActivity::class.java))
+                }
+            } catch (_: Exception) {
+                startActivity(Intent(this@MainActivity, AddExpenseActivity::class.java))
+            }
         }
     }
 }

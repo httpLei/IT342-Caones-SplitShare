@@ -24,7 +24,6 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.abs
 
@@ -54,9 +53,7 @@ class ActivityDetailActivity : AppCompatActivity() {
     private var receiptUrl: String? = null
     private var currentExpense: ExpenseDto? = null
 
-    private val php = NumberFormat.getCurrencyInstance(Locale("en", "PH")).apply {
-        currency = java.util.Currency.getInstance("PHP")
-    }
+    
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -136,10 +133,10 @@ class ActivityDetailActivity : AppCompatActivity() {
         tvSubtitle.text = ""
         tvDescription.text = expense.description
         tvPaidBy.text = expense.paidByName
-        tvAmount.text = php.format(expense.amount)
+        tvAmount.text = SessionManager.formatCurrency(expense.amount)
 
         val shareAbs = abs(expense.share)
-        tvShare.text = if (expense.positive) "+${php.format(shareAbs)}" else "-${php.format(shareAbs)}"
+        tvShare.text = if (expense.positive) "+${SessionManager.formatCurrency(shareAbs)}" else "-${SessionManager.formatCurrency(shareAbs)}"
         tvShare.setTextColor(
             if (expense.positive) resources.getColor(R.color.green_owed, null)
             else resources.getColor(R.color.red_owe, null)

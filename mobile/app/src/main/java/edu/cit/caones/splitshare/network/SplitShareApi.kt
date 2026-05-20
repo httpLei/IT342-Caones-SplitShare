@@ -62,6 +62,12 @@ interface SplitShareApi {
     @DELETE("api/v1/expenses/{expenseId}")
     suspend fun deleteExpense(@Path("expenseId") expenseId: Long): Response<ApiResponse<String>>
 
+    @GET("api/v1/users/me/followers")
+    suspend fun getFollowers(): Response<ApiResponse<List<UserConnectionDto>>>
+
+    @GET("api/v1/users/me/following")
+    suspend fun getFollowing(): Response<ApiResponse<List<UserConnectionDto>>>
+
     @GET("api/v1/users/search")
     suspend fun searchUsers(@Query("q") query: String): Response<ApiResponse<List<UserConnectionDto>>>
 
@@ -76,4 +82,13 @@ interface SplitShareApi {
 
     @GET("api/v1/users/me/history")
     suspend fun getMyHistory(): Response<ApiResponse<List<UserActivityDto>>>
+
+    @PUT("api/v1/users/me")
+    suspend fun updateProfile(@Body request: UpdateProfileRequest): Response<ApiResponse<UserDto>>
+
+    @POST("api/v1/users/me/password")
+    suspend fun changePassword(@Body request: ChangePasswordRequest): Response<ApiResponse<String>>
+
+    @GET("api/v1/users/me/stats")
+    suspend fun getMyStats(): Response<ApiResponse<UserProfileStatsDto>>
 }

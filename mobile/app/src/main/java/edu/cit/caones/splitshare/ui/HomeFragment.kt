@@ -27,7 +27,6 @@ import kotlin.math.abs
 class HomeFragment : Fragment() {
 
     private lateinit var tvGreeting: TextView
-    private lateinit var tvAvatar: TextView
     private lateinit var tvNetBalance: TextView
     private lateinit var tvOwedToYou: TextView
     private lateinit var tvYouOwe: TextView
@@ -39,9 +38,7 @@ class HomeFragment : Fragment() {
     private lateinit var tvActivityLoading: TextView
     private lateinit var tvGlobalError: TextView
 
-    private val php = NumberFormat.getCurrencyInstance(Locale("en", "PH")).apply {
-        currency = java.util.Currency.getInstance("PHP")
-    }
+    
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -50,14 +47,12 @@ class HomeFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         bindViews(view)
-        setupLogoutButton(view)
         populateHeader()
         loadDashboard()
     }
 
     private fun bindViews(view: View) {
         tvGreeting       = view.findViewById(R.id.tvGreeting)
-        tvAvatar         = view.findViewById(R.id.tvAvatar)
         tvNetBalance     = view.findViewById(R.id.tvNetBalance)
         tvOwedToYou      = view.findViewById(R.id.tvOwedToYou)
         tvYouOwe         = view.findViewById(R.id.tvYouOwe)
@@ -79,7 +74,6 @@ class HomeFragment : Fragment() {
     private fun populateHeader() {
         val user = SessionManager.getCurrentUser()
         tvGreeting.text = "Hey, ${user?.firstName ?: "there"} 👋"
-        tvAvatar.text   = user?.initials ?: "?"
     }
 
     private fun loadDashboard() {
@@ -132,9 +126,9 @@ class HomeFragment : Fragment() {
         val totalOwe  = groups.sumOf { it.owe  ?: abs(minOf(it.balance, 0.0)) }
         val net       = totalOwed - totalOwe
 
-        tvNetBalance.text = if (net >= 0) "+${php.format(net)}" else php.format(net)
-        tvOwedToYou.text  = php.format(totalOwed)
-        tvYouOwe.text     = php.format(totalOwe)
+        tvNetBalance.text = if (net >= 0) "+${SessionManager.formatCurrency(net)}" else SessionManager.formatCurrency(net)
+        tvOwedToYou.text  = SessionManager.formatCurrency(totalOwed)
+        tvYouOwe.text     = SessionManager.formatCurrency(totalOwe)
 
         llGroups.removeAllViews()
 
@@ -153,18 +147,18 @@ class HomeFragment : Fragment() {
             card.findViewById<TextView>(R.id.tvGroupMembers).text =
                 "${dto.members.size} member${if (dto.members.size != 1) "s" else ""}"
             card.findViewById<TextView>(R.id.tvGroupTotal).text   =
-                "Total: ${php.format(dto.total)}"
+                "Total: ${SessionManager.formatCurrency(dto.total)}"
 
             val badge   = card.findViewById<TextView>(R.id.tvGroupBadge)
             val balance = dto.balance
             when {
                 balance > 0 -> {
-                    badge.text = "Owed ${php.format(balance)}"
+                    badge.text = "Owed ${SessionManager.formatCurrency(balance)}"
                     badge.background = resources.getDrawable(R.drawable.bg_badge_owed, null)
                     badge.setTextColor(resources.getColor(R.color.green_owed, null))
                 }
                 balance < 0 -> {
-                    badge.text = "Owe ${php.format(abs(balance))}"
+                    badge.text = "Owe ${SessionManager.formatCurrency(abs(balance))}"
                     badge.background = resources.getDrawable(R.drawable.bg_badge_owe, null)
                     badge.setTextColor(resources.getColor(R.color.red_owe, null))
                 }
@@ -240,8 +234,8 @@ class HomeFragment : Fragment() {
 
             val amountTv = row.findViewById<TextView>(R.id.tvActivityAmount)
             val shareAbs = abs(item.share)
-            amountTv.text = if (item.positive) "+${php.format(shareAbs)}"
-                            else "-${php.format(shareAbs)}"
+            amountTv.text = if (item.positive) "+${SessionManager.formatCurrency(shareAbs)}"
+                            else "-${SessionManager.formatCurrency(shareAbs)}"
             amountTv.setTextColor(
                 if (item.positive) resources.getColor(R.color.green_owed, null)
                 else resources.getColor(R.color.red_owe, null)

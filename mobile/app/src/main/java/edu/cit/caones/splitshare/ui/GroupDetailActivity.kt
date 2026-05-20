@@ -26,7 +26,6 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.abs
 
@@ -57,9 +56,7 @@ class GroupDetailActivity : AppCompatActivity() {
 
     private val activityScope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
 
-    private val php = NumberFormat.getCurrencyInstance(Locale("en", "PH")).apply {
-        currency = java.util.Currency.getInstance("PHP")
-    }
+    
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -159,7 +156,7 @@ class GroupDetailActivity : AppCompatActivity() {
 
     private fun renderGroup(group: GroupDetailsDto) {
         currentGroup = group
-        tvGroupMeta.text = "${group.members.size} members · ${php.format(group.total)} total"
+        tvGroupMeta.text = "${group.members.size} members · ${SessionManager.formatCurrency(group.total)} total"
 
         val currentEmail = SessionManager.getCurrentUser()?.email?.lowercase(Locale.getDefault()).orEmpty()
         val displayBalances = if (currentEmail.isNotBlank()) {
@@ -181,12 +178,12 @@ class GroupDetailActivity : AppCompatActivity() {
                 val badge = row.findViewById<TextView>(R.id.tvMemberBadge)
                 when {
                     member.positive -> {
-                        badge.text = "+${php.format(member.amount)}"
+                        badge.text = "+${SessionManager.formatCurrency(member.amount)}"
                         badge.background = resources.getDrawable(R.drawable.bg_badge_owed, null)
                         badge.setTextColor(resources.getColor(R.color.green_owed, null))
                     }
                     member.amount != 0.0 -> {
-                        badge.text = "-${php.format(abs(member.amount))}"
+                        badge.text = "-${SessionManager.formatCurrency(abs(member.amount))}"
                         badge.background = resources.getDrawable(R.drawable.bg_badge_owe, null)
                         badge.setTextColor(resources.getColor(R.color.red_owe, null))
                     }
@@ -241,9 +238,9 @@ class GroupDetailActivity : AppCompatActivity() {
             card.findViewById<TextView>(R.id.tvExpenseTitle).text = expense.description
             card.findViewById<TextView>(R.id.tvExpenseSubtitle).text =
                 "Paid by ${expense.paidByName} · ${expense.createdAt}"
-            card.findViewById<TextView>(R.id.tvExpenseTotal).text = php.format(expense.amount)
+            card.findViewById<TextView>(R.id.tvExpenseTotal).text = SessionManager.formatCurrency(expense.amount)
             card.findViewById<TextView>(R.id.tvExpenseShare).text =
-                "Your share: ${php.format(expense.share)}"
+                "Your share: ${SessionManager.formatCurrency(expense.share)}"
 
             if (!expense.receiptUrl.isNullOrBlank()) {
                 card.findViewById<View>(R.id.receiptDot).visibility = View.VISIBLE
@@ -312,7 +309,7 @@ class GroupDetailActivity : AppCompatActivity() {
                 val row = layoutInflater.inflate(R.layout.item_member_balance, container, false)
                 row.findViewById<TextView>(R.id.tvMemberInitials).text = balance.initial.ifBlank { balance.name.take(2).uppercase() }
                 row.findViewById<TextView>(R.id.tvMemberName).text = balance.name
-                row.findViewById<TextView>(R.id.tvMemberBadge).text = if (balance.positive) "+${php.format(balance.amount)}" else php.format(abs(balance.amount))
+                row.findViewById<TextView>(R.id.tvMemberBadge).text = if (balance.positive) "+${SessionManager.formatCurrency(balance.amount)}" else SessionManager.formatCurrency(abs(balance.amount))
                 val settleButton = row.findViewById<MaterialButton>(R.id.btnSettleMember)
                 settleButton.visibility = View.VISIBLE
                 settleButton.text = if (balance.settlementPending && balance.settledByCurrentUser) "Waiting..." else if (balance.settlementPending) "Confirm Settle" else "Settle"

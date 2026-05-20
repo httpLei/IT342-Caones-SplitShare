@@ -12,6 +12,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import edu.cit.caones.splitshare.R
+import edu.cit.caones.splitshare.SessionManager
 import edu.cit.caones.splitshare.network.RetrofitClient
 import edu.cit.caones.splitshare.network.dto.UserActivityDto
 import kotlinx.coroutines.Dispatchers
@@ -19,7 +20,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.abs
 
@@ -34,9 +34,7 @@ class ActivityFragment : Fragment() {
     private var allActivity: List<UserActivityDto> = emptyList()
     private var searchJob: Job? = null
 
-    private val php = NumberFormat.getCurrencyInstance(Locale("en", "PH")).apply {
-        currency = java.util.Currency.getInstance("PHP")
-    }
+    
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -127,7 +125,7 @@ class ActivityFragment : Fragment() {
 
             val amountTv = row.findViewById<TextView>(R.id.tvActivityAmount)
             val shareAbs = abs(item.share)
-            amountTv.text = if (item.positive) "+${php.format(shareAbs)}" else "-${php.format(shareAbs)}"
+            amountTv.text = if (item.positive) "+${SessionManager.formatCurrency(shareAbs)}" else "-${SessionManager.formatCurrency(shareAbs)}"
             amountTv.setTextColor(
                 if (item.positive) resources.getColor(R.color.green_owed, null)
                 else resources.getColor(R.color.red_owe, null)

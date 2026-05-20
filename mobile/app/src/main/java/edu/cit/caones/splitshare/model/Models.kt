@@ -5,7 +5,8 @@ data class User(
     val firstName: String = "",
     val lastName: String = "",
     val email: String = "",
-    val role: String = "ROLE_USER"
+    val role: String = "ROLE_USER",
+    val currency: String = "PHP"
 ) {
     val fullName: String get() = "$firstName $lastName"
     val initials: String get() = "${firstName.firstOrNull() ?: ""}${lastName.firstOrNull() ?: ""}".uppercase()

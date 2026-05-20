@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Brand -->
+    <color name="purple_primary">#938CF2</color>
+    <color name="purple_light">#2A275A</color>
+    <color name="purple_medium">#6861A7</color>
+    <color name="purple_dark">#B4AEFF</color>
+
+    <!-- Semantic -->
+    <color name="green_owed">#34C99A</color>
+    <color name="green_owed_bg">#183D2C</color>
+    <color name="red_owe">#F1774F</color>
+    <color name="red_owe_bg">#492215</color>
+    <color name="amber_bg">#4D320C</color>
+    <color name="amber_text">#F8C076</color>
+
+    <!-- Neutrals -->
+    <color name="text_primary">#E5E7EB</color>
+    <color name="text_secondary">#9CA3AF</color>
+    <color name="text_hint">#6B7280</color>
+    <color name="surface">#1F2937</color>
+    <color name="background">#111827</color>
+    <color name="border">#374151</color>
+    <color name="divider">#374151</color>
+</resources>

@@ -16,6 +16,18 @@ data class RegisterRequest(
     val password: String
 )
 
+data class UpdateProfileRequest(
+    val firstname: String,
+    val lastname: String,
+    val email: String,
+    val currency: String?
+)
+
+data class ChangePasswordRequest(
+    val currentPassword: String,
+    val newPassword: String
+)
+
 // ── Response DTOs ─────────────────────────────────────────────────────────────
 
 data class ApiResponse<T>(
@@ -138,4 +150,10 @@ data class UserActivityDto(
     val share: Double,
     val positive: Boolean,
     val createdAt: String
+)
+
+data class UserProfileStatsDto(
+    val groupsCount: Int,
+    val followersCount: Int,
+    val followingCount: Int
 )

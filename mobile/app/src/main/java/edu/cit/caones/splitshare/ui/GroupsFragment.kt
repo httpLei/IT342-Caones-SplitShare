@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.button.MaterialButton
 import edu.cit.caones.splitshare.R
+import edu.cit.caones.splitshare.SessionManager
 import edu.cit.caones.splitshare.network.RetrofitClient
 import edu.cit.caones.splitshare.network.dto.CreateGroupRequest
 import edu.cit.caones.splitshare.network.dto.GroupSummaryDto
@@ -25,7 +26,6 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.text.NumberFormat
 import java.util.Locale
 import kotlin.math.abs
 
@@ -46,9 +46,7 @@ class GroupsFragment : Fragment() {
     private var mutualUsers: List<UserConnectionDto> = emptyList()
     private var searchJob: Job? = null
 
-    private val php = NumberFormat.getCurrencyInstance(Locale("en", "PH")).apply {
-        currency = java.util.Currency.getInstance("PHP")
-    }
+    
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -303,17 +301,17 @@ class GroupsFragment : Fragment() {
             card.findViewById<TextView>(R.id.tvGroupName).text = dto.name
             card.findViewById<TextView>(R.id.tvGroupMembers).text =
                 "${dto.members.size} member${if (dto.members.size != 1) "s" else ""}"
-            card.findViewById<TextView>(R.id.tvGroupTotal).text = "Total: ${php.format(dto.total)}"
+            card.findViewById<TextView>(R.id.tvGroupTotal).text = "Total: ${SessionManager.formatCurrency(dto.total)}"
 
             val badge = card.findViewById<TextView>(R.id.tvGroupBadge)
             when {
                 dto.balance > 0 -> {
-                    badge.text = "Owed ${php.format(dto.balance)}"
+                    badge.text = "Owed ${SessionManager.formatCurrency(dto.balance)}"
                     badge.background = resources.getDrawable(R.drawable.bg_badge_owed, null)
                     badge.setTextColor(resources.getColor(R.color.green_owed, null))
                 }
                 dto.balance < 0 -> {
-                    badge.text = "Owe ${php.format(abs(dto.balance))}"
+                    badge.text = "Owe ${SessionManager.formatCurrency(abs(dto.balance))}"
                     badge.background = resources.getDrawable(R.drawable.bg_badge_owe, null)
                     badge.setTextColor(resources.getColor(R.color.red_owe, null))
                 }
