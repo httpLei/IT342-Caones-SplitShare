@@ -49,7 +49,7 @@ export default function GroupsPage() {
   useEffect(() => {
     loadGroups();
     loadMutuals().catch(() => {
-      setConnectionError("Unable to load mutual connections.");
+      setConnectionError("No mutual connections yet.");
     });
   }, []);
 

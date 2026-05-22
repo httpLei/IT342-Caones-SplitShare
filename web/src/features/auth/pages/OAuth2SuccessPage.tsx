@@ -1,15 +1,20 @@
-import { useEffect, useState } from "react";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import { useAuth } from "../AuthContext";
 import type { UserDto } from "../types/auth";
 
 export default function OAuth2SuccessPage() {
-  const navigate = useNavigate();
   const { login } = useAuth();
   const [searchParams] = useSearchParams();
   const [error, setError] = useState("");
+  const hasProcessed = useRef(false);
 
   useEffect(() => {
+    if (hasProcessed.current) {
+      return;
+    }
+    hasProcessed.current = true;
+
     const googleError = searchParams.get("error");
     if (googleError) {
       setError(googleError);
@@ -31,8 +36,10 @@ export default function OAuth2SuccessPage() {
 
     const user: UserDto = { email, firstname, lastname, role, currency };
     login(user, accessToken, refreshToken);
-    navigate(role === "ROLE_ADMIN" ? "/admin" : "/dashboard", { replace: true });
-  }, [login, navigate, searchParams]);
+
+    // Force a clean route without OAuth query params after tokens are saved.
+    window.location.replace(role === "ROLE_ADMIN" ? "/admin" : "/dashboard");
+  }, [login, searchParams]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-950 px-4">
