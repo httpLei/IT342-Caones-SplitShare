@@ -2,7 +2,7 @@ import api from '../../../shared/services/api';
 import type { ApiResponse } from '../../auth/types/auth';
 import type { CreateExpenseRequest, CreateGroupRequest, ExpenseDto, GroupDetailsDto, GroupSummaryDto, UpdateExpenseRequest, UpdateGroupRequest } from '../types/groups';
 
-function buildExpenseFormData(data: CreateExpenseRequest | UpdateExpenseRequest & { receipt?: File | null }) {
+function buildExpenseFormData(data: (CreateExpenseRequest | UpdateExpenseRequest) & { receipt?: File | null }) {
   const formData = new FormData();
   const { receipt, ...expense } = data as CreateExpenseRequest & { receipt?: File | null };
   formData.append('data', new Blob([JSON.stringify(expense)], { type: 'application/json' }));
