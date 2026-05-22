@@ -222,13 +222,37 @@ class SettingsFragment : Fragment() {
         val fname = etFirstName.text.toString().trim()
         val lname = etLastName.text.toString().trim()
         val email = etEmail.text.toString().trim()
-        val currency = SessionManager.getCurrentUser()?.currency ?: "PHP"
+        val currentUser = SessionManager.getCurrentUser()
+        val currency = currentUser?.currency ?: "PHP"
 
         if (fname.isEmpty() || lname.isEmpty() || email.isEmpty()) {
             Toast.makeText(requireContext(), "Please fill all fields", Toast.LENGTH_SHORT).show()
             return
         }
 
+        val emailChanged = !currentUser?.email.equals(email, ignoreCase = true)
+        if (emailChanged) {
+            AlertDialog.Builder(requireContext())
+                .setTitle("Change email?")
+                .setMessage("You will be logged out after changing your email. Please sign in again using your new email address.")
+                .setPositiveButton("Continue") { _, _ ->
+                    performProfileUpdate(fname, lname, email, currency, emailChanged = true)
+                }
+                .setNegativeButton("Cancel", null)
+                .show()
+            return
+        }
+
+        performProfileUpdate(fname, lname, email, currency, emailChanged = false)
+    }
+
+    private fun performProfileUpdate(
+        fname: String,
+        lname: String,
+        email: String,
+        currency: String,
+        emailChanged: Boolean
+    ) {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val req = UpdateProfileRequest(fname, lname, email, currency)
@@ -236,26 +260,50 @@ class SettingsFragment : Fragment() {
                 withContext(Dispatchers.Main) {
                     if (res.isSuccessful && res.body()?.success == true) {
                         SessionManager.updateUserProfile(fname, lname, email, currency)
-                        
-                        tvSettingsName.text = "$fname $lname"
-                        tvSettingsEmail.text = email
-                        val fnameInit = fname.firstOrNull()?.uppercaseChar() ?: ""
-                        val lnameInit = lname.firstOrNull()?.uppercaseChar() ?: ""
-                        tvSettingsInitials.text = "$fnameInit$lnameInit"
-                        
-                        Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show()
+                        if (emailChanged) {
+                            Toast.makeText(requireContext(), "Email updated. Please sign in again.", Toast.LENGTH_SHORT).show()
+                            logoutAfterEmailChange()
+                        } else {
+                            refreshProfileHeader(fname, lname, email)
+                            Toast.makeText(requireContext(), "Profile updated", Toast.LENGTH_SHORT).show()
+                        }
                     } else {
-                        SessionManager.updateUserProfile(fname, lname, email, currency)
-                        Toast.makeText(requireContext(), "Saved locally (Server update failed)", Toast.LENGTH_SHORT).show()
+                        if (emailChanged) {
+                            val message = res.body()?.error?.message ?: "Unable to update email."
+                            Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                        } else {
+                            SessionManager.updateUserProfile(fname, lname, email, currency)
+                            Toast.makeText(requireContext(), "Saved locally (Server update failed)", Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    SessionManager.updateUserProfile(fname, lname, email, currency)
-                    Toast.makeText(requireContext(), "Saved locally (Offline)", Toast.LENGTH_SHORT).show()
+                    if (emailChanged) {
+                        Toast.makeText(requireContext(), "Cannot update email while offline.", Toast.LENGTH_SHORT).show()
+                    } else {
+                        SessionManager.updateUserProfile(fname, lname, email, currency)
+                        Toast.makeText(requireContext(), "Saved locally (Offline)", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
         }
+    }
+
+    private fun refreshProfileHeader(fname: String, lname: String, email: String) {
+        tvSettingsName.text = "$fname $lname"
+        tvSettingsEmail.text = email
+        val fnameInit = fname.firstOrNull()?.uppercaseChar() ?: ""
+        val lnameInit = lname.firstOrNull()?.uppercaseChar() ?: ""
+        tvSettingsInitials.text = "$fnameInit$lnameInit"
+    }
+
+    private fun logoutAfterEmailChange() {
+        SessionManager.logout()
+        startActivity(Intent(requireContext(), LoginActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        })
+        requireActivity().finish()
     }
 
     private fun updatePreferences() {

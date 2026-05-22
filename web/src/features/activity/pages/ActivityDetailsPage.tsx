@@ -24,6 +24,7 @@ export default function ActivityDetailsPage() {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState("");
   const [success, setSuccess] = useState("");
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (!Number.isFinite(id)) return;
@@ -75,8 +76,6 @@ export default function ActivityDetailsPage() {
   };
 
   const handleDeleteExpense = async () => {
-    if (!window.confirm("Delete this expense?")) return;
-
     setSaving(true);
     setSaveError("");
     setSuccess("");
@@ -91,6 +90,7 @@ export default function ActivityDetailsPage() {
       setSaveError((err as { response?: { data?: { error?: { message?: string } } } })?.response?.data?.error?.message ?? "Unable to delete expense.");
     } finally {
       setSaving(false);
+      setShowDeleteConfirm(false);
     }
   };
 
@@ -173,7 +173,7 @@ export default function ActivityDetailsPage() {
               Edit Expense
             </button>
             <button
-              onClick={handleDeleteExpense}
+              onClick={() => setShowDeleteConfirm(true)}
               className="px-4 py-2 text-sm font-bold rounded-xl border border-red-200 text-red-700 hover:bg-red-50 transition"
               disabled={saving}
             >
@@ -197,6 +197,57 @@ export default function ActivityDetailsPage() {
         onClose={() => setShowEditModal(false)}
         onSubmit={handleUpdateExpense}
       />
+
+      {showDeleteConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+          onClick={() => {
+            if (!saving) setShowDeleteConfirm(false);
+          }}
+        >
+          <div
+            className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl transition duration-300 dark:bg-gray-800"
+            onClick={(event) => event.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="delete-expense-title"
+          >
+            <div className="mb-5">
+              <h3 id="delete-expense-title" className="text-xl font-bold text-gray-900 dark:text-white">
+                Delete expense?
+              </h3>
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                This will permanently remove "{detail.desc}" from your activity and group balances.
+              </p>
+            </div>
+
+            {saveError && (
+              <div className="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/30 dark:text-red-300">
+                {saveError}
+              </div>
+            )}
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                disabled={saving}
+                className="flex-1 rounded-xl border border-gray-200 px-4 py-3 text-sm font-semibold text-gray-600 transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDeleteExpense}
+                disabled={saving}
+                className="flex-1 rounded-xl bg-red-600 px-4 py-3 text-sm font-bold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {saving ? "Deleting..." : "Delete expense"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {showReceiptPreview && detail.receiptUrl && (
         <div

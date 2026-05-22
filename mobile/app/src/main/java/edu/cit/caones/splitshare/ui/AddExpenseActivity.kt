@@ -1,11 +1,11 @@
 package edu.cit.caones.splitshare.ui
 
 import android.app.DatePickerDialog
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
-import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
@@ -13,7 +13,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.gson.Gson
 import com.google.android.material.button.MaterialButton
-import com.google.android.material.chip.ChipGroup
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
@@ -32,7 +31,6 @@ import java.io.ByteArrayOutputStream
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import kotlin.math.max
 
 class AddExpenseActivity : AppCompatActivity() {
 
@@ -41,17 +39,19 @@ class AddExpenseActivity : AppCompatActivity() {
         const val EXTRA_GROUP_NAME = "extra_group_name"
     }
 
-    private lateinit var btnClose: ImageButton
+    private lateinit var btnClose: View
     private lateinit var etAmount: TextInputEditText
     private lateinit var tilDescription: TextInputLayout
     private lateinit var etDescription: TextInputEditText
-    private lateinit var chipGroupCategory: ChipGroup
+    private lateinit var actvCategory: MaterialAutoCompleteTextView
     private lateinit var actvGroup: MaterialAutoCompleteTextView
     private lateinit var actvPaidBy: MaterialAutoCompleteTextView
     private lateinit var etDate: TextInputEditText
     private lateinit var btnAttachReceipt: LinearLayout
     private lateinit var tvReceiptStatus: TextView
+    private lateinit var tvReceiptHint: TextView
     private lateinit var tvError: TextView
+    private lateinit var btnCancelExpense: MaterialButton
     private lateinit var btnSaveExpense: MaterialButton
 
     private var receiptUri: Uri? = null
@@ -65,8 +65,10 @@ class AddExpenseActivity : AppCompatActivity() {
     ) { uri ->
         uri?.let {
             receiptUri = it
-            tvReceiptStatus.text = "Receipt attached ✓"
-            tvReceiptStatus.setTextColor(resources.getColor(R.color.green_owed, null))
+            tvReceiptStatus.text = "Receipt attached"
+            tvReceiptStatus.setTextColor(Color.WHITE)
+            tvReceiptHint.text = "Ready to upload"
+            tvReceiptHint.setTextColor(Color.parseColor("#9CA3AF"))
         }
     }
 
@@ -83,6 +85,7 @@ class AddExpenseActivity : AppCompatActivity() {
         loadGroups(preselectedGroup)
 
         btnClose.setOnClickListener { finish() }
+        btnCancelExpense.setOnClickListener { finish() }
         btnAttachReceipt.setOnClickListener {
             pickImageLauncher.launch("image/*")
         }
@@ -94,42 +97,27 @@ class AddExpenseActivity : AppCompatActivity() {
         etAmount = findViewById(R.id.etAmount)
         tilDescription = findViewById(R.id.tilDescription)
         etDescription = findViewById(R.id.etDescription)
-        chipGroupCategory = findViewById(R.id.chipGroupCategory)
+        actvCategory = findViewById(R.id.actvCategory)
         actvGroup = findViewById(R.id.actvGroup)
         actvPaidBy = findViewById(R.id.actvPaidBy)
         etDate = findViewById(R.id.etDate)
         btnAttachReceipt = findViewById(R.id.btnAttachReceipt)
         tvReceiptStatus = findViewById(R.id.tvReceiptStatus)
+        tvReceiptHint = findViewById(R.id.tvReceiptHint)
         tvError = findViewById(R.id.tvError)
+        btnCancelExpense = findViewById(R.id.btnCancelExpense)
         btnSaveExpense = findViewById(R.id.btnSaveExpense)
         
-        setupCategories()
+        setupCategoryDropdown()
     }
 
-    private fun setupCategories() {
-        chipGroupCategory.removeAllViews()
+    private fun setupCategoryDropdown() {
         val categories = SessionManager.getSelectedCategories()
-        val defaultCategories = if (categories.isEmpty()) setOf("Food", "Transport") else categories
-        
-        var firstChipId = -1
-        defaultCategories.forEachIndexed { index, cat ->
-            val chip = com.google.android.material.chip.Chip(this).apply {
-                id = View.generateViewId()
-                text = cat
-                isCheckable = true
-                isClickable = true
-                setChipDrawable(com.google.android.material.chip.ChipDrawable.createFromAttributes(
-                    this@AddExpenseActivity,
-                    null,
-                    0,
-                    com.google.android.material.R.style.Widget_Material3_Chip_Filter
-                ))
-            }
-            if (index == 0) {
-                firstChipId = chip.id
-                chip.isChecked = true
-            }
-            chipGroupCategory.addView(chip)
+        val defaultCategories = if (categories.isEmpty()) listOf("Food", "Transport") else categories.toList()
+        val adapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, defaultCategories)
+        actvCategory.setAdapter(adapter)
+        if (defaultCategories.isNotEmpty()) {
+            actvCategory.setText(defaultCategories.first(), false)
         }
     }
 
@@ -282,23 +270,18 @@ class AddExpenseActivity : AppCompatActivity() {
                     tvError.text = response.body()?.error?.message ?: "Unable to save expense."
                     tvError.visibility = View.VISIBLE
                     btnSaveExpense.isEnabled = true
-                    btnSaveExpense.text = "Save Expense"
+                    btnSaveExpense.text = "Save expense"
                 }
             } catch (_: Exception) {
                 tvError.text = "Cannot reach server. Is the backend running?"
                 tvError.visibility = View.VISIBLE
                 btnSaveExpense.isEnabled = true
-                btnSaveExpense.text = "Save Expense"
+                btnSaveExpense.text = "Save expense"
             }
         }
     }
 
     private fun selectedCategory(): String {
-        val chipId = chipGroupCategory.checkedChipId
-        if (chipId != View.NO_ID) {
-            val chip = chipGroupCategory.findViewById<com.google.android.material.chip.Chip>(chipId)
-            return chip?.text?.toString() ?: "Food"
-        }
-        return "Food"
+        return actvCategory.text?.toString()?.trim().orEmpty()
     }
 }

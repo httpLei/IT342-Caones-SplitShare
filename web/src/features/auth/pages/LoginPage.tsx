@@ -21,6 +21,13 @@ export default function LoginPage() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
+  const handleGoogleSignIn = () => {
+    setError("");
+    setSuccess("Redirecting to Google...");
+    const redirectUri = `${window.location.origin}/oauth2/success`;
+    window.location.href = `/oauth2/authorization/google?redirect_uri=${encodeURIComponent(redirectUri)}`;
+  };
+
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     setError("");
@@ -126,6 +133,23 @@ export default function LoginPage() {
                 {loading ? "Signing in..." : "Sign In"}
               </button>
             </form>
+
+            <div className="my-6 flex items-center gap-3">
+              <div className="h-px flex-1 bg-gray-200" />
+              <span className="text-xs font-semibold uppercase tracking-wide text-gray-400">or</span>
+              <div className="h-px flex-1 bg-gray-200" />
+            </div>
+
+            <button
+              type="button"
+              onClick={handleGoogleSignIn}
+              className="flex w-full items-center justify-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3 text-sm font-bold text-gray-700 transition hover:bg-gray-50 hover:shadow-sm"
+            >
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white text-base font-bold" style={{ color: "#4285F4" }}>
+                G
+              </span>
+              Sign in with Google
+            </button>
 
             <p className="mt-6 text-center text-sm text-gray-400">
               Don't have an account?{" "}

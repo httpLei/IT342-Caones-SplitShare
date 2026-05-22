@@ -77,6 +77,7 @@ public class AuthService {
                 .firstname(user.getFirstname())
                 .lastname(user.getLastname())
                 .role(includeRole ? user.getRole().name() : null)
+                .currency(user.getCurrency())
                 .build();
     }
 }

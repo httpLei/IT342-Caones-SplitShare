@@ -38,16 +38,24 @@
         android:paddingStart="12dp"
         android:paddingEnd="12dp" />
 
-    <EditText
-        android:id="@+id/etEditExpenseCategory"
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilEditExpenseCategory"
+        style="@style/SplitShare.TextInput"
         android:layout_width="match_parent"
-        android:layout_height="44dp"
-        android:hint="Category"
-        android:inputType="text"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="8dp"
-        android:background="@android:drawable/edit_text"
-        android:paddingStart="12dp"
-        android:paddingEnd="12dp" />
+        app:endIconMode="dropdown_menu"
+        app:hintEnabled="false">
+
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/actvEditExpenseCategory"
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:hint="Category"
+            android:inputType="none"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp" />
+    </com.google.android.material.textfield.TextInputLayout>
 
     <EditText
         android:id="@+id/etEditExpenseAmount"

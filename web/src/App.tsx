@@ -7,6 +7,7 @@ import ProtectedRoute from "./features/auth/components/ProtectedRoute";
 import AdminRoute from "./features/auth/components/AdminRoute";
 import UserLayout from "./features/layout/components/UserLayout";
 import Login from "./features/auth/pages/LoginPage";
+import OAuth2Success from "./features/auth/pages/OAuth2SuccessPage";
 import Register from "./features/auth/pages/RegisterPage";
 import Dashboard from "./features/dashboard/pages/DashboardPage";
 import Groups from "./features/groups/pages/GroupsPage";
@@ -27,6 +28,7 @@ export default function App() {
             <Routes>
               <Route path="/"         element={<Navigate to="/login" replace />} />
               <Route path="/login"    element={<Login />} />
+              <Route path="/oauth2/success" element={<OAuth2Success />} />
               <Route path="/register" element={<Register />} />
               <Route
                 element={

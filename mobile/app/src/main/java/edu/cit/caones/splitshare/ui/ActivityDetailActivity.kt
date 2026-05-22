@@ -3,6 +3,7 @@ package edu.cit.caones.splitshare.ui
 import android.content.Intent
 import android.os.Bundle
 import android.view.View
+import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -14,6 +15,7 @@ import com.bumptech.glide.Glide
 import com.bumptech.glide.load.model.GlideUrl
 import com.bumptech.glide.load.model.LazyHeaders
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import edu.cit.caones.splitshare.R
 import edu.cit.caones.splitshare.SessionManager
 import edu.cit.caones.splitshare.network.RetrofitClient
@@ -194,19 +196,28 @@ class ActivityDetailActivity : AppCompatActivity() {
         val expense = currentExpense ?: return
         val dialogView = layoutInflater.inflate(R.layout.dialog_edit_expense, null)
         val etDescription = dialogView.findViewById<android.widget.EditText>(R.id.etEditExpenseDescription)
-        val etCategory = dialogView.findViewById<android.widget.EditText>(R.id.etEditExpenseCategory)
+        val actvCategory = dialogView.findViewById<MaterialAutoCompleteTextView>(R.id.actvEditExpenseCategory)
         val etAmount = dialogView.findViewById<android.widget.EditText>(R.id.etEditExpenseAmount)
         val tvEditError = dialogView.findViewById<TextView>(R.id.tvEditExpenseError)
         val dialog = AlertDialog.Builder(this).setView(dialogView).create()
+        val categories = SessionManager.getSelectedCategories().let {
+            if (it.isEmpty()) listOf("Food", "Transport") else it.toList()
+        }
+        val categoryOptions = if (expense.category.isBlank() || categories.any { it.equals(expense.category, ignoreCase = true) }) {
+            categories
+        } else {
+            listOf(expense.category) + categories
+        }
 
         etDescription.setText(expense.description)
-        etCategory.setText(expense.category)
+        actvCategory.setAdapter(ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, categoryOptions))
+        actvCategory.setText(expense.category.ifBlank { categoryOptions.firstOrNull().orEmpty() }, false)
         etAmount.setText(expense.amount.toString())
 
         dialogView.findViewById<MaterialButton>(R.id.btnCancelEditExpense).setOnClickListener { dialog.dismiss() }
         dialogView.findViewById<MaterialButton>(R.id.btnSaveEditExpense).setOnClickListener {
             val description = etDescription.text?.toString()?.trim().orEmpty()
-            val category = etCategory.text?.toString()?.trim().orEmpty()
+            val category = actvCategory.text?.toString()?.trim().orEmpty()
             val amount = etAmount.text?.toString()?.toDoubleOrNull()
 
             if (description.isBlank() || category.isBlank() || amount == null || amount <= 0.0) {
