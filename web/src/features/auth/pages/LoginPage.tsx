@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import { Mail, Lock, LogIn } from "lucide-react";
 import { authApi } from "../../../shared/services/api";
+import { API_BASE_URL } from "../../../shared/services/config";
 import { useAuth } from "../AuthContext";
 
 export default function LoginPage() {
@@ -25,7 +26,7 @@ export default function LoginPage() {
     setError("");
     setSuccess("Redirecting to Google...");
     const redirectUri = `${window.location.origin}/oauth2/success`;
-    window.location.href = `/oauth2/authorization/google?redirect_uri=${encodeURIComponent(redirectUri)}`;
+    window.location.href = `${API_BASE_URL}/oauth2/authorization/google?redirect_uri=${encodeURIComponent(redirectUri)}`;
   };
 
   const handleSubmit = async (event: FormEvent) => {
