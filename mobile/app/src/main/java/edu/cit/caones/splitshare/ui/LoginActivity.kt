@@ -13,6 +13,7 @@ import com.google.android.material.textfield.TextInputLayout
 import edu.cit.caones.splitshare.MainActivity
 import edu.cit.caones.splitshare.R
 import edu.cit.caones.splitshare.SessionManager
+import edu.cit.caones.splitshare.network.ApiConfig
 import edu.cit.caones.splitshare.network.RetrofitClient
 import edu.cit.caones.splitshare.network.dto.AuthData
 import edu.cit.caones.splitshare.network.dto.LoginRequest
@@ -32,7 +33,7 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var btnGoToRegister: MaterialButton
     private lateinit var tvError: TextView
 
-    private val googleAuthUrl = "http://10.0.2.2:8080/oauth2/authorization/google?redirect_uri=splitshare%3A%2F%2Foauth2%2Fsuccess"
+    private val googleAuthUrl = "${ApiConfig.BASE_URL}oauth2/authorization/google?redirect_uri=splitshare%3A%2F%2Foauth2%2Fsuccess"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

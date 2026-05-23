@@ -6,6 +6,7 @@ import AddExpenseModal from "../../groups/components/AddExpenseModal";
 import { expenseApi } from "../../groups/services/groupService";
 import type { ExpenseDto } from "../../groups/types/groups";
 import { formatCurrency, signedCurrency } from "../../../shared/utils/format";
+import { resolveApiAssetUrl } from "../../../shared/services/config";
 
 export default function ActivityDetailsPage() {
   const navigate = useNavigate();
@@ -58,6 +59,7 @@ export default function ActivityDetailsPage() {
 
   const detail = expense;
   const canEdit = detail.paidByEmail.toLowerCase() === (user?.email ?? "").toLowerCase();
+  const receiptUrl = resolveApiAssetUrl(detail.receiptUrl);
 
   const handleUpdateExpense = async (payload: { description: string; category: string; amount: number; receipt?: File | null }) => {
     setSaving(true);
@@ -249,7 +251,7 @@ export default function ActivityDetailsPage() {
         </div>
       )}
 
-      {showReceiptPreview && detail.receiptUrl && (
+      {showReceiptPreview && receiptUrl && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
           onClick={() => {
@@ -277,7 +279,7 @@ export default function ActivityDetailsPage() {
               </div>
             )}
             <img
-              src={detail.receiptUrl}
+              src={receiptUrl}
               alt="Expense receipt"
               onLoad={() => setReceiptLoading(false)}
               onError={() => setReceiptLoading(false)}

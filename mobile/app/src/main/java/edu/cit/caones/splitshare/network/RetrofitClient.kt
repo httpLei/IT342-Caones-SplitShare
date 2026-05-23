@@ -10,10 +10,7 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    // ── Change this to your machine's IP when running on a real device ────────
-    // For emulator: http://10.0.2.2:8080/   (loopback alias to host machine)
-    // For real device on same Wi-Fi: http://192.168.x.x:8080/
-    private const val BASE_URL = "http://10.0.2.2:8080/"
+    val baseUrl: String = ApiConfig.BASE_URL
 
     private val authInterceptor = Interceptor { chain ->
         val token = SessionManager.getToken()
@@ -39,7 +36,7 @@ object RetrofitClient {
         .build()
 
     private val retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
+        .baseUrl(baseUrl)
         .client(httpClient)
         .addConverterFactory(GsonConverterFactory.create())
         .build()

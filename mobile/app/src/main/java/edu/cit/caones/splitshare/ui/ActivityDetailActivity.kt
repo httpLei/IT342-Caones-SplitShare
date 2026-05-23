@@ -18,6 +18,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
 import edu.cit.caones.splitshare.R
 import edu.cit.caones.splitshare.SessionManager
+import edu.cit.caones.splitshare.network.ApiConfig
 import edu.cit.caones.splitshare.network.RetrofitClient
 import edu.cit.caones.splitshare.network.dto.ExpenseDto
 import edu.cit.caones.splitshare.network.dto.UpdateExpenseRequest
@@ -33,7 +34,6 @@ class ActivityDetailActivity : AppCompatActivity() {
 
     companion object {
         const val EXTRA_EXPENSE_ID = "expense_id"
-        private const val API_BASE_URL = "http://10.0.2.2:8080/"
     }
 
     private lateinit var tvLoading: TextView
@@ -291,7 +291,7 @@ class ActivityDetailActivity : AppCompatActivity() {
     }
 
     private fun absoluteUrl(url: String): String {
-        return if (url.startsWith("http://") || url.startsWith("https://")) url else "$API_BASE_URL${url.trimStart('/')}"
+        return if (url.startsWith("http://") || url.startsWith("https://")) url else "${ApiConfig.BASE_URL}${url.trimStart('/')}"
     }
 
     private fun escapeJson(value: String): String {

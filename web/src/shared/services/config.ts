@@ -6,3 +6,15 @@ const configuredApiBaseUrl = isLocalhost
   : import.meta.env.VITE_API_URL || 'https://splitshare-api-r991.onrender.com';
 
 export const API_BASE_URL = configuredApiBaseUrl.replace(/\/+$/, '');
+
+export function resolveApiAssetUrl(url?: string | null) {
+  if (!url) {
+    return "";
+  }
+
+  if (url.startsWith("http://") || url.startsWith("https://")) {
+    return url;
+  }
+
+  return `${API_BASE_URL}/${url.replace(/^\/+/, "")}`;
+}
