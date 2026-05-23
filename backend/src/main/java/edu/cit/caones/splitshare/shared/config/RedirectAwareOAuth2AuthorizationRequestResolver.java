@@ -82,7 +82,9 @@ public class RedirectAwareOAuth2AuthorizationRequestResolver implements OAuth2Au
             String host = uri.getHost();
             return ("splitshare".equalsIgnoreCase(scheme) && "oauth2".equalsIgnoreCase(host))
                     || (("http".equalsIgnoreCase(scheme) || "https".equalsIgnoreCase(scheme))
-                    && ("localhost".equalsIgnoreCase(host) || "127.0.0.1".equals(host)));
+                    && ("localhost".equalsIgnoreCase(host)
+                    || "127.0.0.1".equals(host)
+                    || "splitshare-web.onrender.com".equalsIgnoreCase(host)));
         } catch (IllegalArgumentException ex) {
             return false;
         }
